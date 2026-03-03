@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Gestao.Core/Gestao.Core.csproj" />
+  <Project Path="Gestao.Tests/Gestao.Tests.csproj" />
+</Solution>
