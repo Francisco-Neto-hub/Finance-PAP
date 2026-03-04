@@ -91,3 +91,64 @@ cbCategorias.SelectedValuePath = "IdCategoria";
 >Logger: Se o erro for inesperado (Exception genérica), chama sempre Logger.LogError(ex). 
 
 >Enums: Usa TipoMovimento.Entrada ou TipoMovimento.Saida em vez de números soltos (1 ou 2).
+
+## 7. Registo de Novos Utilizadores
+Para criar uma nova conta, envia o objeto Utilizador e a password (ainda em texto limpo). O Core tratará de validar e encriptar.
+
+```csharp
+var novoUser = new Utilizador { 
+    Nome = txtNome.Text, 
+    Email = txtEmail.Text 
+};
+
+try {
+    userService.RegistarUtilizador(novoUser, txtPassword.Password);
+    MessageBox.Show("Conta criada com sucesso!");
+}
+catch (BusinessException ex) {
+    MessageBox.Show(ex.Message, "Erro de Validação");
+}
+
+Nota de Arquitetura: Para manter o código limpo, utiliza sempre a interface IUserService para declarar as variáveis, e a classe UserService apenas para instanciar.
+
+// Forma correta de instanciar na UI:
+IUserService _userService = new UserService(new DbConnectionFactory());
+```
+
+## 8. Verificação de Versão
+No arranque da aplicação, verifica se o utilizador tem a versão mais recente.
+
+```csharp
+var versionService = new VersionService(new DbConnectionFactory());
+string versaoSoftware = "1.0.0"; // Versão desta App
+
+if (!versionService.VerificarSeVersaoEAtual(versaoSoftware)) {
+    var nova = versionService.ObterUltimaVersao();
+    MessageBox.Show($"Nova versão disponível ({nova.Versao})! Descarregue em: {nova.UrlDownload}");
+}
+```
+## 9. Gestão de Contas
+Antes de lançar movimentos, deves obter as contas do utilizador logado.
+
+```csharp
+// Exemplo: Carregar ComboBox de Contas
+var contas = contaService.ListarContasPorUtilizador(userLogado.IdUtilizador);
+cbContas.ItemsSource = contas;
+cbContas.DisplayMemberPath = "Nome";
+cbContas.SelectedValuePath = "IdConta";
+```
+## 10. Histórico e Auditoria
+O sistema regista automaticamente alterações críticas. Para operações de edição, deves sempre enviar o ID do utilizador que está a realizar a alteração.
+
+- **Método:** `AtualizarMovimento(movimento, valorAntigo, idUser)`
+- **Tabela Relacionada:** `Historico`
+
+## 11. Sistema de Alertas
+Podes listar as notificações pendentes do utilizador para mostrar alertas de saldo ou segurança.
+
+```csharp
+var alertas = alertService.ObterAlertasAtivos(userLogado.IdUtilizador);
+foreach (var msg in alertas) {
+    // Mostrar na lista de notificações da UI
+}
+```

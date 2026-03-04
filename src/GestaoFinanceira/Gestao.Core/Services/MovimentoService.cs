@@ -97,6 +97,22 @@ namespace Gestao.Core.Services
                 new { idConta });
         }
 
+        public void AtualizarMovimento(Movimento m, decimal valorAntigo, int idUserLogado)
+        {
+            using var db = _dbFactory.CreateConnection();
+
+            // 1. Atualiza o movimento
+            string sqlUpdate = "UPDATE Movimento SET valor = @Valor, descricao = @Descricao WHERE id_movimento = @IdMovimento";
+            db.Execute(sqlUpdate, m);
+
+            // 2. Se o valor mudou, regista no histórico
+            if (m.Valor != valorAntigo)
+            {
+                var audit = new AuditService(_dbFactory);
+                audit.RegistarAlteracao(m.IdMovimento, "valor", valorAntigo.ToString(), m.Valor.ToString(), idUserLogado);
+            }
+        }
+
         /// <summary>
         /// Realiza a eliminação lógica de um movimento (soft delete).
         /// O registo permanece na BD mas deixa de ser contabilizado nos totais.
