@@ -1,5 +1,0 @@
-<Solution>
-  <Project Path="Gestao.Core/Gestao.Core.csproj" />
-  <Project Path="Gestao.Tests/Gestao.Tests.csproj" Id="6b1d85f5-0664-4fcb-b615-15a7bb2251c0" />
-  <Project Path="Gestao/Gestao.csproj" Id="c0d2a422-14f3-45df-93ac-c3a9415f44e9" />
-</Solution>
