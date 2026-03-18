@@ -56,6 +56,11 @@
                     FontAttributes="Bold"
                     FontSize="18" />
 
+            <Button Text="Não tem conta? Registe-se" 
+                Command="{Binding IrParaRegistoCommand}" 
+                BackgroundColor="Transparent" 
+                TextColor="#00C2FF" />
+
             <ActivityIndicator IsRunning="{Binding IsBusy}"
                                IsVisible="{Binding IsBusy}"
                                Color="#00C2FF"

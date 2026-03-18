@@ -16,6 +16,7 @@ public partial class Cliente
 
     public string ByPass { get; set; } = null!;
 
+    public DateTime? DataCriacao { get; set; }
     public virtual ICollection<ContratoCliente> ContratoClientes { get; set; } = new List<ContratoCliente>();
 
     public virtual EstadoCliente? IdEstadoClienteNavigation { get; set; }

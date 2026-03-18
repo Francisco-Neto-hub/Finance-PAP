@@ -4,7 +4,8 @@ using System.Diagnostics; // Necessário para o Debug.WriteLine
 
 namespace Finance.Core.Services
 {
-    public class FinanceService
+    // 1. Assinar a interface explicitamente
+    public class FinanceService : IFinanceService
     {
         private readonly FinanceDbContext _context;
 
@@ -73,6 +74,17 @@ namespace Finance.Core.Services
                 .Where(c => c.IdContrato == idContrato)
                 .Select(c => (decimal?)c.Montante) // Cast para nullable para evitar erro se vazio
                 .SumAsync() ?? 0m;
+        }
+
+        // 2. Implementar o método que falta para a CollectionView da Dashboard
+        public async Task<List<Transacao>> GetUltimasTransacoesAsync(int idContrato)
+        {
+            return await _context.Transacaos
+                .Include(t => t.IdCategoriaNavigation)
+                .Where(t => t.IdContaNavigation!.IdContrato == idContrato)
+                .OrderByDescending(t => t.DataTransacao)
+                .Take(10) // Pegamos apenas as 10 últimas para a Dashboard
+                .ToListAsync();
         }
 
         public async Task<Dictionary<string, decimal>> GetGastosPorCategoriaAsync(int idContrato)

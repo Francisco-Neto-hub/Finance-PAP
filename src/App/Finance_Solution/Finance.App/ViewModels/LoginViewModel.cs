@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace Finance.App.ViewModels
 {
-    public class LoginViewModel : ObservableObject
+    public partial class LoginViewModel : ObservableObject
     {
         private readonly AuthService _authService;
 
@@ -46,31 +46,38 @@ namespace Finance.App.ViewModels
         private async Task LoginAsync()
         {
             if (IsBusy) return;
-
             try
             {
                 IsBusy = true;
-
+                // Valida na BD (SQLite) através do teu AuthService
                 var usuario = await _authService.ValidarCredenciaisAsync(Email, Password);
 
                 if (usuario != null)
                 {
-                    await Shell.Current.DisplayAlertAsync("Sucesso", $"Bem-vindo, {usuario.Nome}", "OK");
+                    // SUCESSO: Entra na Main Page
+                    // O "//" limpa o histórico para o utilizador não voltar ao login com o botão "back"
+                    await Shell.Current.GoToAsync("//MainPage");
                 }
                 else
                 {
-                    await Shell.Current.DisplayAlertAsync("Erro", "Email ou Password incorretos", "OK");
+                    // FALHA: Dados inválidos
+                    await Shell.Current.DisplayAlertAsync("Acesso Negado", "Email ou Password incorretos.", "Tentar novamente");
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[LOGIN_ERROR]: {ex.Message}");
-                await Shell.Current.DisplayAlertAsync("Erro", "Falha na ligação à base de dados.", "OK");
+                // Isto vai mostrar o erro real no ecrã para sabermos se é "Table not found" ou "Wrong password"
+                await Shell.Current.DisplayAlertAsync("Erro de Ligação", ex.Message, "OK");
             }
-            finally
-            {
-                IsBusy = false;
-            }
+            finally { IsBusy = false; }
+        }
+
+        [RelayCommand]
+        async Task IrParaRegisto()
+        {
+            // Navegação simples para a página de registo
+            await Shell.Current.GoToAsync("RegisterPage");
         }
     }
 }

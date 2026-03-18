@@ -1,5 +1,6 @@
 ﻿using Finance.Core.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace Finance.Core.Services
 {
@@ -20,6 +21,31 @@ namespace Finance.Core.Services
                 .FirstOrDefaultAsync(c => c.Email == email &&
                                           c.ByPass == password &&
                                           c.IdEstadoCliente == 1);
+        }
+
+        // Novo Método de Registo adaptado ao teu Model "Cliente"
+        public async Task<bool> RegistarClienteAsync(Cliente novoCliente)
+        {
+            try
+            {
+                bool existe = await _context.Clientes
+                    .AnyAsync(c => c.Email.ToLower() == novoCliente.Email.ToLower());
+
+                if (existe) return false;
+
+                // Agora isto já funciona!
+                novoCliente.IdEstadoCliente = 1;
+                novoCliente.DataCriacao = DateTime.Now;
+
+                _context.Clientes.Add(novoCliente);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ERRO]: {ex.Message}");
+                return false;
+            }
         }
     }
 }
