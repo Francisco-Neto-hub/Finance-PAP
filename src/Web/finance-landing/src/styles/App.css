@@ -1,0 +1,319 @@
+/* =========================================
+   1. DEFINIÇÕES GERAIS & VARIÁVEIS
+   ========================================= */
+:root {
+    --finance-blue: #00C2FF;   /* Azul da App Mobile */
+    --finance-dark: #121212;   /* Fundo Principal */
+    --finance-nav: #1a1a1a;    /* Fundo Navbar/Footer */
+    --text-light: #ffffff;
+    --text-gray: #888888;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    line-height: 1.6;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+.app-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1; /* Empurra o footer para o fundo */
+}
+
+/* =========================================
+   2. NAVEGAÇÃO (NAVBAR)
+   ========================================= */
+.navbar {
+    background: var(--finance-nav);
+    color: white;
+    padding: 1rem 10%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid #333;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: var(--text-light);
+}
+
+.nav-logo {
+    height: 35px;
+    margin-right: 12px;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 25px;
+}
+
+.nav-links a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.nav-links a:hover {
+    color: var(--finance-blue);
+}
+
+/* =========================================
+   3. SECÇÃO HERO (HOLDING)
+   ========================================= */
+.hero {
+    min-height: 85vh;
+    padding: 60px 20px;
+    text-align: center;
+    background: linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), 
+                url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1000');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.hero-content {
+    max-width: 800px;
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+.hero-title {
+    font-size: 2.8rem;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    color: #ccc;
+}
+
+/* Mockup / Icon Wrapper */
+.mockup-container {
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.app-icon-wrapper {
+    position: relative;
+    padding: 25px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    border: 2px solid var(--finance-blue);
+    display: inline-block;
+}
+
+.download-badge {
+    position: absolute;
+    bottom: -8px;
+    right: -8px;
+    background: var(--finance-blue);
+    color: #000;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+}
+
+/* Botão Download */
+.btn-download {
+    display: inline-flex;
+    align-items: center;
+    background: #27ae60;
+    color: white;
+    padding: 18px 35px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: all 0.4s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-download:hover {
+    background: #2ecc71;
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3);
+}
+
+/* =========================================
+   4. COMPONENTES DE CONTEÚDO (MANUAL/CREDITOS)
+   ========================================= */
+
+/* Estilos específicos para o Manual */
+.manual-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.manual-icon-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.manual-icon-header h3 {
+    margin: 0;
+    color: var(--finance-nav);
+    font-size: 1.3rem;
+}
+
+.text-blue-500 {
+    color: var(--finance-blue);
+}
+
+/* Ajuste para desktop */
+@media (min-width: 768px) {
+    .manual-grid {
+        grid-template-columns: 1fr; /* Mantemos em lista para focar na leitura, ou 1fr 1fr para lado a lado */
+    }
+}
+
+/* Estilos de Contactos */
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: var(--finance-nav);
+}
+
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.form-group textarea {
+    height: 120px;
+    resize: none;
+}
+
+.social-links {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.social-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: #444;
+    padding: 10px;
+    border-radius: 8px;
+    transition: 0.3s;
+    background: #f9f9f9;
+}
+
+.social-item:hover {
+    background: #f0f0f0;
+    color: var(--finance-blue);
+}
+
+/* Responsividade para Contactos */
+@media (max-width: 768px) {
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.container {
+    max-width: 900px;
+    margin: 60px auto;
+    padding: 40px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+h2 {
+    color: var(--finance-nav);
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid var(--finance-blue);
+    display: inline-block;
+}
+
+.credit-card {
+    border-left: 5px solid var(--finance-blue);
+    padding: 20px;
+    margin-bottom: 20px;
+    background: #fcfcfc;
+    border-radius: 0 8px 8px 0;
+}
+
+/* =========================================
+   5. RODAPÉ (FOOTER)
+   ========================================= */
+.main-footer {
+    background: var(--finance-nav);
+    color: var(--text-gray);
+    padding: 40px 20px;
+    text-align: center;
+    border-top: 1px solid #333;
+}
+
+/* =========================================
+   6. ANIMAÇÕES & RESPONSIVIDADE
+   ========================================= */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .navbar { padding: 1rem 5%; }
+    .nav-links { display: none; } /* Pode ser substituído por um menu hambúrguer depois */
+    .hero-title { font-size: 2rem; }
+    .btn-download { width: 100%; justify-content: center; }
+}

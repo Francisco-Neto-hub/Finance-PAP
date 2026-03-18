@@ -6,7 +6,6 @@ using System.Windows.Input;
 
 namespace Finance.App.ViewModels
 {
-    // Removido o 'partial' para bloquear os geradores de código automáticos
     public class LoginViewModel : ObservableObject
     {
         private readonly AuthService _authService;
