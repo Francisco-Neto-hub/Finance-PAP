@@ -9,7 +9,7 @@ const Creditos = () => {
       <div className="credit-card">
         <div className="manual-icon-header">
           <User size={24} color="#00C2FF" />
-          <strong>João Silva</strong>
+          <strong>Francisco Loureiro</strong>
         </div>
         <p style={{ marginLeft: '40px' }}>Lead Developer & UI Design. Responsável pela arquitetura do software e interface principal.</p>
       </div>
@@ -17,7 +17,7 @@ const Creditos = () => {
       <div className="credit-card">
         <div className="manual-icon-header">
           <Shield size={24} color="#00C2FF" />
-          <strong>Maria Santos</strong>
+          <strong>Francisco Neto</strong>
         </div>
         <p style={{ marginLeft: '40px' }}>Backend & Segurança. Especialista em criptografia e gestão de bases de dados locais.</p>
       </div>

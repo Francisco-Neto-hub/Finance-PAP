@@ -167,7 +167,7 @@ body {
 }
 
 /* =========================================
-   4. COMPONENTES DE CONTEÚDO (MANUAL/CREDITOS)
+   4. COMPONENTES DE CONTEÚDO (MANUAL/CREDITOS/E ETC...)
    ========================================= */
 
 /* Estilos específicos para o Manual */
@@ -292,6 +292,46 @@ h2 {
     border-radius: 0 8px 8px 0;
 }
 
+/* Estilos para a Features */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: -20px;
+}
+
+.feature-card {
+    background: var(--finance-nav);
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #333;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0, 194, 255, 0.1);
+    border-color: var(--finance-blue);
+}
+
+.feature-icon {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: center;
+}
+
+.feature-card h3 {
+    color: var(--text-light);
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.feature-card p {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+}
+
 /* =========================================
    5. RODAPÉ (FOOTER)
    ========================================= */
@@ -316,4 +356,17 @@ h2 {
     .nav-links { display: none; } /* Pode ser substituído por um menu hambúrguer depois */
     .hero-title { font-size: 2rem; }
     .btn-download { width: 100%; justify-content: center; }
+}
+
+/* Estado Inicial (Invisível) */
+.reveal-hidden {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease-out;
+}
+
+/* Estado Final (Visível ao chegar com o scroll) */
+.reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
 }
