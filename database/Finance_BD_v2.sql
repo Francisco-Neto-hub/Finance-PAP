@@ -1,7 +1,6 @@
-/* PROJETO: Finance - Sistema de Gestão de Contas
+/* PROJETO: Finance - Sistema de Gestão de Contas (Versão SQL Server)
    AUTORES: Francisco Neto e Francisco Loureiro
-   DATA: 05/03/2026
-   DESCRIÇÃO: Script único para criação de estrutura e dados iniciais.
+   DESCRIÇÃO: Script unificado com Estrutura, Perfis (Admin/User) e Seed Data.
 */
 
 -- 1. CRIAR AS TABELAS DE ESTADO (Lookup Tables)
@@ -30,7 +29,7 @@ CREATE TABLE Estado_Transacao (
     designacao VARCHAR(50) NOT NULL
 );
 
--- 2. CRIAR TABELAS DE CATEGORIZAÇÃO (Do Relatório)
+-- 2. CRIAR TABELAS DE CATEGORIZAÇÃO E PERFIS
 CREATE TABLE Categoria (
     idCategoria INT PRIMARY KEY IDENTITY(1,1),
     Nome VARCHAR(50) NOT NULL
@@ -41,6 +40,12 @@ CREATE TABLE Tipo_Movimento (
     descricao VARCHAR(20) NOT NULL 
 );
 
+CREATE TABLE Perfil (
+    IdPerfil INT PRIMARY KEY IDENTITY(1,1),
+    NomePerfil VARCHAR(50) NOT NULL, -- 'Admin', 'Utilizador'
+    Descricao VARCHAR(255)
+);
+
 -- 3. CRIAR ENTIDADES PRINCIPAIS
 CREATE TABLE Cliente (
     idCliente INT PRIMARY KEY IDENTITY(1,1),
@@ -49,8 +54,11 @@ CREATE TABLE Cliente (
     email VARCHAR(100) UNIQUE NOT NULL,
     DataNasc DATE,
     idEstadoCliente INT,
-    by_pass VARCHAR(255) NOT NULL DEFAULT '12345'
-    FOREIGN KEY (idEstadoCliente) REFERENCES Estado_Cliente(idEstado)
+    IdPerfil INT NOT NULL DEFAULT 2, -- Por padrão: Utilizador
+    by_pass VARCHAR(255) NOT NULL DEFAULT '12345',
+    DataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (idEstadoCliente) REFERENCES Estado_Cliente(idEstado),
+    FOREIGN KEY (IdPerfil) REFERENCES Perfil(IdPerfil)
 );
 
 CREATE TABLE Contrato (
@@ -107,7 +115,15 @@ INSERT INTO Estado_Transacao (designacao) VALUES ('Concluída'), ('Pendente');
 
 INSERT INTO Tipo_Movimento (descricao) VALUES ('Receita'), ('Despesa');
 
+INSERT INTO Perfil (NomePerfil, Descricao) VALUES 
+('Admin', 'Acesso total ao sistema e gestão de utilizadores'),
+('Utilizador', 'Acesso apenas aos próprios movimentos financeiros');
+
 INSERT INTO Categoria (Nome) VALUES 
 ('Salário'), ('Alimentação'), ('Transporte'), ('Lazer'), ('Saúde'), ('Habitação');
 
-PRINT 'Base de Dados Finance criada com sucesso!';
+-- 5. DADOS DE TESTE (Utilizador Admin Inicial)
+INSERT INTO Cliente (nome, email, idEstadoCliente, IdPerfil, by_pass) 
+VALUES ('Francisco Admin', 'admin@finance.com', 1, 1, '5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5');
+
+PRINT 'Base de Dados Finance Unificada criada com sucesso!';

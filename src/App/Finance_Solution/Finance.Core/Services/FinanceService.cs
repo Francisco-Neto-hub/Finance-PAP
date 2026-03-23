@@ -4,7 +4,6 @@ using System.Diagnostics; // Necessário para o Debug.WriteLine
 
 namespace Finance.Core.Services
 {
-    // 1. Assinar a interface explicitamente
     public class FinanceService : IFinanceService
     {
         private readonly FinanceDbContext _context;
@@ -14,11 +13,8 @@ namespace Finance.Core.Services
             _context = context;
         }
 
-        // --- MOVIMENTAÇÕES ---
-
         public async Task<(bool Sucesso, string Mensagem)> RegistarTransacaoAsync(Transacao movimento)
         {
-            // 1. Validação de Entrada: Impede valores negativos ou zero na transação
             if (movimento.ValorTransacao <= 0)
                 return (false, "O valor da transação deve ser superior a zero.");
 
@@ -28,78 +24,66 @@ namespace Finance.Core.Services
                 var conta = await _context.Conta.FindAsync(movimento.IdConta);
                 if (conta == null) return (false, "Conta não encontrada.");
 
-                // 2. Lógica de Saldo
+                // Lógica de Saldo
                 if (movimento.IdTipo == 1) // Receita
                 {
-                    conta.Montante += movimento.ValorTransacao;
+                    conta.Montante = (conta.Montante ?? 0) + movimento.ValorTransacao;
                 }
                 else if (movimento.IdTipo == 2) // Despesa
                 {
-                    // Validação de Saldo Insuficiente
-                    if (conta.Montante < movimento.ValorTransacao)
-                        return (false, "Saldo insuficiente para realizar esta despesa.");
+                    if ((conta.Montante ?? 0) < movimento.ValorTransacao)
+                        return (false, "Saldo insuficiente na conta.");
 
-                    conta.Montante -= movimento.ValorTransacao;
-                }
-                else
-                {
-                    return (false, "Tipo de transação inválido.");
+                    conta.Montante = (conta.Montante ?? 0) - movimento.ValorTransacao;
                 }
 
-                // 3. Persistência
-                movimento.DataTransacao = DateTime.Now;
                 _context.Transacaos.Add(movimento);
-
                 await _context.SaveChangesAsync();
                 await dbTransaction.CommitAsync();
 
-                return (true, "Sucesso!");
+                return (true, "Transação registada com sucesso!");
             }
             catch (Exception ex)
             {
                 await dbTransaction.RollbackAsync();
-                // Isto é crucial para o teu "eu" do futuro não perder horas no debug:
-                Debug.WriteLine($"[ERRO FINANCE_SERVICE]: {ex.Message}");
-                Debug.WriteLine($"[STACK TRACE]: {ex.StackTrace}");
-
-                return (false, "Erro técnico ao processar a transação. Tente novamente.");
+                Debug.WriteLine($"[ERRO TRANSACAO]: {ex.Message}");
+                return (false, "Erro técnico ao registar transação.");
             }
         }
 
-        // --- DASHBOARD ---
-
         public async Task<decimal> GetSaldoTotalContratoAsync(int idContrato)
         {
+            // O uso de (decimal?) evita erro se não houver contas
             return await _context.Conta
                 .Where(c => c.IdContrato == idContrato)
-                .Select(c => (decimal?)c.Montante) // Cast para nullable para evitar erro se vazio
+                .Select(c => (decimal?)c.Montante)
                 .SumAsync() ?? 0m;
         }
 
-        // 2. Implementar o método que falta para a CollectionView da Dashboard
         public async Task<List<Transacao>> GetUltimasTransacoesAsync(int idContrato)
         {
             return await _context.Transacaos
                 .Include(t => t.IdCategoriaNavigation)
-                .Where(t => t.IdContaNavigation!.IdContrato == idContrato)
+                .Include(t => t.IdContaNavigation)
+                .Where(t => t.IdContaNavigation != null && t.IdContaNavigation.IdContrato == idContrato)
                 .OrderByDescending(t => t.DataTransacao)
-                .Take(10) // Pegamos apenas as 10 últimas para a Dashboard
-                .ToListAsync();
+                .Take(10)
+                .ToListAsync() ?? new List<Transacao>();
         }
 
         public async Task<Dictionary<string, decimal>> GetGastosPorCategoriaAsync(int idContrato)
         {
-            return await _context.Transacaos
+            var dados = await _context.Transacaos
                 .Include(t => t.IdCategoriaNavigation)
                 .Include(t => t.IdContaNavigation)
-                .Where(t => t.IdContaNavigation!.IdContrato == idContrato && t.IdTipo == 2)
-                .GroupBy(t => t.IdCategoriaNavigation!.Nome) // Substitui 'Designacao' pelo nome real que está no ficheiro Categorium.cs
-                .Select(g => new {
-                    // Se a categoria for nula, usamos "Outros"
-                    Categoria = g.Key ?? "Outros",
-                    Total = g.Sum(t => t.ValorTransacao)
-                })
-                .ToDictionaryAsync(x => x.Categoria, x => x.Total);
+                .Where(t => t.IdContaNavigation != null &&
+                            t.IdContaNavigation.IdContrato == idContrato &&
+                            t.IdTipo == 2) // Apenas Despesas
+                .GroupBy(t => t.IdCategoriaNavigation != null ? t.IdCategoriaNavigation.Nome : "Outros")
+                .Select(g => new { Categoria = g.Key, Total = g.Sum(t => t.ValorTransacao) })
+                .ToListAsync();
+
+            return dados.ToDictionary(x => x.Categoria, x => x.Total);
         }
     }
 }

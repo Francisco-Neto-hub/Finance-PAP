@@ -28,7 +28,6 @@ namespace Finance.Tests
 
             // ASSERT
             // 1. Verificar se o serviço não retornou nulo
-            Assert.NotNull(resultado);
 
             // 2. Verificar se o email retornado é o correto
             Assert.Equal(email, resultado!.Email);

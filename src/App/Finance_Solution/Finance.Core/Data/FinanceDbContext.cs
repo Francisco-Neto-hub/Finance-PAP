@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.SqlServer;
 
 namespace Finance.Core.Models;
 
@@ -12,7 +13,8 @@ public partial class FinanceDbContext : DbContext
         : base(options)
     {
     }
-
+    public virtual DbSet<Perfil> Perfis { get; set; } // O nome da tabela é Perfil
+    
     public virtual DbSet<Categorium> Categoria { get; set; }
 
     public virtual DbSet<Cliente> Clientes { get; set; }
@@ -36,7 +38,22 @@ public partial class FinanceDbContext : DbContext
     public virtual DbSet<TipoMovimento> TipoMovimentos { get; set; }
 
     public virtual DbSet<Transacao> Transacaos { get; set; }
-    
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            // Usa o pacote Microsoft.EntityFrameworkCore.SqlServer
+            // Se estiveres a testar no Windows Machine, o nome do server funciona.            
+            optionsBuilder.UseSqlServer(@"Server=DESKTOP-76S1NRV\SQLEXPRESS;Database=BD_Finance_v2;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;");
+
+            // Se for no Android, troca o nome do Server pelo IP 10.0.2.2
+
+            //string connectionString = @"Server=10.0.2.2\SQLEXPRESS;Database=BD_Finance_v2;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;";
+            //optionsBuilder.UseSqlServer(connectionString);
+        }
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Categorium>(entity =>
@@ -80,6 +97,17 @@ public partial class FinanceDbContext : DbContext
             entity.HasOne(d => d.IdEstadoClienteNavigation).WithMany(p => p.Clientes)
                 .HasForeignKey(d => d.IdEstadoCliente)
                 .HasConstraintName("FK__Cliente__idEstad__5535A963");
+
+            entity.HasOne(d => d.IdPerfilNavigation)
+                  .WithMany(p => p.Clientes)
+                  .HasForeignKey(d => d.IdPerfil)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<Perfil>(entity =>
+        {
+            entity.HasKey(e => e.IdPerfil);
+            entity.Property(e => e.NomePerfil).IsRequired().HasMaxLength(50);
         });
 
         modelBuilder.Entity<Contrato>(entity =>

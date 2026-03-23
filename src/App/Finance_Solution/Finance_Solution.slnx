@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="Finance.App/Finance.App.csproj" />
   <Project Path="Finance.Core/Finance.Core.csproj" />
   <Project Path="Finance.Tests/Finance.Tests.csproj" />
+  <Project Path="FinanceUI/FinanceUI.csproj" Id="0779f9ab-43c4-47f2-b97f-07cbad996535" />
 </Solution>
