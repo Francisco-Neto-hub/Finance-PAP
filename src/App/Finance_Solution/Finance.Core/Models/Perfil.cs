@@ -1,13 +1,12 @@
-﻿
-namespace Finance.Core.Models
-{
-    public partial class Perfil
-    {
-        public int IdPerfil { get; set; }
-        public string NomePerfil { get; set; } = null!;
-        public string? Descricao { get; set; }
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-        // Esta coleção é necessária para o .WithMany(p => p.Clientes) no DbContext
-        public virtual ICollection<Cliente> Clientes { get; set; } = new List<Cliente>();
-    }
+namespace Finance.Core.Models;
+
+public class Perfil
+{
+    public int IdPerfil { get; set; }
+    public string NomePerfil { get; set; } = string.Empty;
+    public string? Descricao { get; set; }
 }

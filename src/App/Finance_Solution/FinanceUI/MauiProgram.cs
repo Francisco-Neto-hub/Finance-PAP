@@ -1,41 +1,44 @@
-﻿using Finance.Core.Models;
-using Finance.Core.Services;
-using FinanceUI.ViewModel;
+﻿using Finance.Core.Interfaces;
+using Finance.Infrastructure.Repositories;
+using Finance.Infrastructure.Services;
+using FinanceUI;
 using Microsoft.Extensions.Logging;
 
-namespace FinanceUI
+namespace Finance.UI;
+
+public static class MauiProgram
 {
-    public static class MauiProgram
+    public static MauiApp CreateMauiApp()
     {
-        public static MauiApp CreateMauiApp()
-        {
-            var builder = MauiApp.CreateBuilder();
-            builder
-                .UseMauiApp<App>()
-                .ConfigureFonts(fonts =>
-                {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-                });
-            
-            // 1. Configurar o DbContext
-            // Nota: Vê o ponto abaixo sobre a Connection String para Android!
-            builder.Services.AddDbContext<FinanceDbContext>(); // Contexto
+        var builder = MauiApp.CreateBuilder();
+        builder
+            .UseMauiApp<App>()
+            .ConfigureFonts(fonts =>
+            {
+                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+            });
 
-            // 2. Registar os Serviços (Abstração e Implementação)
-            builder.Services.AddSingleton<IAuthService, AuthService>(); // Serviço de Login
-            builder.Services.AddSingleton<IFinanceService, FinanceService>(); // Lógica Financeira
+        // 1. CONFIGURAÇÃO DA STRING DE CONEXÃO
+        // Dica: Em produção, isto viria de um ficheiro de config, para a PAP podes pôr aqui:
+        string connectionString = "Server=DESKTOP-76S1NRV\\SQLEXPRESS;Database=BD_Finance;TrustServerCertificate=True;";
 
-            // 3. Registar as ViewModels e Pages
-            // Transient garante que uma nova instância é criada ao navegar
-            builder.Services.AddTransient<DashboardViewModel>();
-            //builder.Services.AddTransient<DashboardPage>();
+        // 2. REGISTAR OS REPOSITÓRIOS (Infrastructure)
+        builder.Services.AddSingleton<IUsuarioRepository>(new UsuarioRepository(connectionString));
+        builder.Services.AddSingleton<IContaRepository>(new ContaRepository(connectionString));
+        builder.Services.AddSingleton<ITransacaoRepository>(new TransacaoRepository(connectionString));
+
+        // 3. REGISTAR O SERVIÇO PRINCIPAL (Core <-> Infrastructure)
+        builder.Services.AddSingleton<IFinanceService, FinanceDataService>();
+
+        // 4. REGISTAR AS VIEWMODELS E PÁGINAS (Para a UI conseguir pedir o serviço no construtor)
+        // builder.Services.AddTransient<LoginViewModel>();
+        // builder.Services.AddTransient<LoginPage>();
 
 #if DEBUG
-            builder.Logging.AddDebug();
+        builder.Logging.AddDebug();
 #endif
 
-            return builder.Build();
-        }
+        return builder.Build();
     }
 }

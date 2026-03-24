@@ -8,5 +8,6 @@ Este diretório contém os scripts SQL Server para o sistema de gestão financei
 3. `03_Views.sql`: Cria as vistas para o Dashboard.
 4. `04_Procedures.sql`: Implementa a lógica de negócio (Transações e Transferências).
 5. `05_Functions.sql`: Implementa a lógica de autenticação.
+5. `06_Auditoria.sql`: Implementa a lógica da auditoria/histórico.
 
 **Nota:** Todos os estados são geridos via campos `BIT` para otimização de memória e performance.

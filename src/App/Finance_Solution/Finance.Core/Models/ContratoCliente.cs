@@ -1,16 +1,12 @@
-﻿namespace Finance.Core.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-public partial class ContratoCliente
+namespace Finance.Core.Models;
+
+public class ContratoCliente
 {
     public int IdContrato { get; set; }
-
     public int IdCliente { get; set; }
-
-    public int? IdEstadoContratoCliente { get; set; }
-
-    public virtual Cliente IdClienteNavigation { get; set; } = null!;
-
-    public virtual Contrato IdContratoNavigation { get; set; } = null!;
-
-    public virtual EstadoContratoCliente? IdEstadoContratoClienteNavigation { get; set; }
+    public bool IsTitular { get; set; } // Define se é o dono ou apenas beneficiário
 }

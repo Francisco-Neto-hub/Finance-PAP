@@ -73,6 +73,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Finance.Core\Finance.Core.csproj" />
+	  <ProjectReference Include="..\Finance.Infrastructure\Finance.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -1,10 +1,11 @@
-﻿namespace Finance.Core.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-public partial class TipoMovimento
+namespace Finance.Core.Models;
+
+public class TipoMovimento
 {
     public int IdTipo { get; set; }
-
-    public string Descricao { get; set; } = null!;
-
-    public virtual ICollection<Transacao> Transacaos { get; set; } = new List<Transacao>();
+    public string Descricao { get; set; } = string.Empty; // 'Receita' ou 'Despesa'
 }

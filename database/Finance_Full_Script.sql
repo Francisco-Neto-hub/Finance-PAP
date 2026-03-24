@@ -7,9 +7,9 @@
 USE master;
 GO
 -- Criar base de dados se não existir (Opcional, podes comentar se já tiveres a BD criada)
--- CREATE DATABASE FinanceDB;
+-- CREATE DATABASE BD_Finance;
 -- GO
--- USE FinanceDB;
+-- USE BD_Finance;
 -- GO
 
 -- ==========================================================
@@ -86,6 +86,15 @@ CREATE TABLE [Transacao] (
     FOREIGN KEY (idConta) REFERENCES Conta(idConta),
     FOREIGN KEY (idCategoria) REFERENCES Categoria(idCategoria),
     FOREIGN KEY (idTipo) REFERENCES Tipo_Movimento(idTipo)
+);
+
+CREATE TABLE Auditoria_Saldo (
+    idLog INT PRIMARY KEY IDENTITY(1,1),
+    idConta INT,
+    SaldoAntigo DECIMAL(18,2),
+    SaldoNovo DECIMAL(18,2),
+    DataAlteracao DATETIME DEFAULT GETDATE(),
+    Usuario VARCHAR(50) -- Pode ser o e-mail do admin que fez a alteração
 );
 GO
 
@@ -199,6 +208,22 @@ BEGIN
     DECLARE @id INT;
     SELECT @id = idCliente FROM Cliente WHERE email = @email AND by_pass = @pass AND IsExcluido = 0;
     RETURN @id;
+END;
+GO
+
+-- Trigger para registar mudanças de saldo automaticamente
+CREATE TRIGGER trg_AuditarSaldo
+ON Conta
+AFTER UPDATE
+AS
+BEGIN
+    IF UPDATE(Montante)
+    BEGIN
+        INSERT INTO Auditoria_Saldo (idConta, SaldoAntigo, SaldoNovo)
+        SELECT d.idConta, d.Montante, i.Montante
+        FROM deleted d
+        JOIN inserted i ON d.idConta = i.idConta;
+    END
 END;
 GO
 

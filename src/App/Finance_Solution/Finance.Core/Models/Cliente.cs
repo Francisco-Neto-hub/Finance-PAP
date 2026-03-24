@@ -1,21 +1,19 @@
-﻿namespace Finance.Core.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-public partial class Cliente
+namespace Finance.Core.Models
 {
-    public int IdCliente { get; set; }
-    public string Nome { get; set; } = null!;
-    public string? Telemovel { get; set; } // Faltava esta propriedade
-    public string Email { get; set; } = null!;
-    public DateTime? DataNasc { get; set; }
-    public int? IdEstadoCliente { get; set; } // Faltava esta propriedade
-    public int IdPerfil { get; set; }
-    public string ByPass { get; set; } = null!;
-    public DateTime? DataCriacao { get; set; }
-
-    // Propriedades de Navegação (Essenciais para o HasOne/WithMany do DbContext)
-    public virtual EstadoCliente? IdEstadoClienteNavigation { get; set; }
-    public virtual Perfil IdPerfilNavigation { get; set; } = null!;
-
-    // Relação com Contratos (Para evitar o erro de ContratoClientes)
-    public virtual ICollection<ContratoCliente> ContratoClientes { get; set; } = new List<ContratoCliente>();
+    public class Cliente
+    {
+        public int IdCliente { get; set; }
+        public string Nome { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? Telemovel { get; set; }
+        public DateTime? DataNasc { get; set; }
+        public bool IsAtivo { get; set; }
+        public bool IsExcluido { get; set; }
+        public int IdPerfil { get; set; }
+        public string ByPass { get; set; } = "12345";
+    }
 }

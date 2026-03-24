@@ -1,28 +1,17 @@
-﻿namespace Finance.Core.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-public partial class Transacao
+namespace Finance.Core.Models;
+
+public class Transacao
 {
     public int IdTransacao { get; set; }
-
     public int IdConta { get; set; }
-
-    public int? IdEstadoTransacao { get; set; }
-
-    public string NomeTransacao { get; set; } = null!;
-
-    public DateTime DataTransacao { get; set; }
-
+    public string NomeTransacao { get; set; } = string.Empty;
     public decimal ValorTransacao { get; set; }
-
-    public int? IdCategoria { get; set; }
-
-    public int? IdTipo { get; set; }
-
-    public virtual Categorium? IdCategoriaNavigation { get; set; }
-
-    public virtual Contum IdContaNavigation { get; set; } = null!;
-
-    public virtual EstadoTransacao? IdEstadoTransacaoNavigation { get; set; }
-
-    public virtual TipoMovimento? IdTipoNavigation { get; set; }
+    public DateTime DataTransacao { get; set; }
+    public int IdCategoria { get; set; }
+    public int IdTipo { get; set; } // 1: Receita, 2: Despesa
+    public bool IsConcluida { get; set; }
 }
