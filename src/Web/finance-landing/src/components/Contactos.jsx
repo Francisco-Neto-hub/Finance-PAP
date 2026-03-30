@@ -40,7 +40,7 @@ const Contactos = () => {
               <Mail color="#00C2FF" />
               <span>suporte@finance.pt</span>
             </a>
-            <a href="https://github.com" target="_blank" className="social-item">
+            <a href="https://github.com/Francisco-Neto-hub/Finance-PAP" target="_blank" className="social-item">
               <Github color="#00C2FF" />
               <span>GitHub do Projeto</span>
             </a>
