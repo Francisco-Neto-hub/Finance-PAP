@@ -1,6 +1,0 @@
-<Solution>
-  <Project Path="Finance.Core/Finance.Core.csproj" />
-  <Project Path="Finance.Infrastructure/Finance.Infrastructure.csproj" Id="b2fe2245-4cfa-47a9-b2e1-737334074849" />
-  <Project Path="Finance.Tests/Finance.Tests.csproj" />
-  <Project Path="FinanceUI/FinanceUI.csproj" Id="0779f9ab-43c4-47f2-b97f-07cbad996535" />
-</Solution>
