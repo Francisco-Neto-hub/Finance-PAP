@@ -41,7 +41,7 @@ CREATE TABLE Cliente (
     IsAtivo BIT DEFAULT 1,
     IsExcluido BIT DEFAULT 0, -- Soft Delete
     IdPerfil INT NOT NULL DEFAULT 2,
-    by_pass VARCHAR(255) NOT NULL DEFAULT '12345',
+    PasswordHash VARCHAR(255) NOT NULL DEFAULT '12345',
     DataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (IdPerfil) REFERENCES Perfil(IdPerfil)
 );
@@ -102,15 +102,21 @@ GO
 -- 2. DADOS INICIAIS (SEED DATA)
 -- ==========================================================
 
-INSERT INTO Tipo_Movimento (descricao) VALUES ('Receita'), ('Despesa');
+INSERT INTO Tipo_Movimento (descricao) VALUES ('Receita'), ('Despesa'), ('Transferência');
 INSERT INTO Perfil (NomePerfil, Descricao) VALUES 
 ('Admin', 'Acesso total'), ('Utilizador', 'Acesso limitado');
 INSERT INTO Categoria (Nome) VALUES 
 ('Salário'), ('Alimentação'), ('Transporte'), ('Lazer'), ('Saúde'), ('Habitação');
 
--- Admin Inicial (Password em Hash)
-INSERT INTO Cliente (nome, email, IsAtivo, IdPerfil, by_pass) 
-VALUES ('Francisco Admin', 'admin@finance.com', 1, 1, '5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5');
+-- Inserção do Admin com Hash gerado no momento do Insert para a senha 'admin123'
+INSERT INTO Cliente (nome, email, IsAtivo, IdPerfil, PasswordHash) 
+VALUES (
+    'Francisco Admin', 
+    'admin@finance.com', 
+    1, 
+    1, 
+    CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', '12345'), 2)
+);
 GO
 
 -- ==========================================================
@@ -145,7 +151,7 @@ GROUP BY CAT.Nome, MONTH(T.DataTransacao), YEAR(T.DataTransacao);
 GO
 
 -- ==========================================================
--- 4. LÓGICA DE NEGÓCIO (PROCEDURES & FUNCTIONS)
+-- 4. LÓGICA DE NEGÓCIO (PROCEDURES, TRIGGERS & FUNCTIONS)
 -- ==========================================================
 
 CREATE PROCEDURE sp_RegistarTransacao
@@ -201,30 +207,50 @@ BEGIN
 END;
 GO
 
-CREATE FUNCTION fn_ValidarLogin (@email VARCHAR(100), @pass VARCHAR(255))
+-- Função de Validação de Login com Hash Interno
+CREATE OR ALTER FUNCTION fn_ValidarLogin (@Email VARCHAR(100), @Password VARCHAR(255))
 RETURNS INT
 AS
 BEGIN
-    DECLARE @id INT;
-    SELECT @id = idCliente FROM Cliente WHERE email = @email AND by_pass = @pass AND IsExcluido = 0;
-    RETURN @id;
-END;
+    DECLARE @idCliente INT;
+
+    SELECT @idCliente = idCliente
+    FROM Cliente
+    WHERE Email = @Email 
+      -- Comparamos texto com texto (convertendo a senha digitada em Hexadecimal)
+      AND PasswordHash = CONVERT(VARCHAR(250), HASHBYTES('SHA2_256', @Password), 2)
+      AND IsAtivo = 1 
+      AND IsExcluido = 0;
+
+    RETURN ISNULL(@idCliente, 0);
+END
 GO
 
 -- Trigger para registar mudanças de saldo automaticamente
-CREATE TRIGGER trg_AuditarSaldo
+CREATE TRIGGER trg_AuditoriaConta_Update
 ON Conta
 AFTER UPDATE
 AS
 BEGIN
+    -- Só dispara se o campo 'Montante' tiver sido alterado
     IF UPDATE(Montante)
     BEGIN
-        INSERT INTO Auditoria_Saldo (idConta, SaldoAntigo, SaldoNovo)
-        SELECT d.idConta, d.Montante, i.Montante
-        FROM deleted d
-        JOIN inserted i ON d.idConta = i.idConta;
+        INSERT INTO Auditoria_Saldo (idConta, SaldoAntigo, SaldoNovo, DataAlteracao, Usuario)
+        SELECT 
+            i.idConta,
+            d.Montante, -- d = deleted (A tabela fantasma com o valor antigo)
+            i.Montante, -- i = inserted (A tabela fantasma com o valor novo)
+            GETDATE(),
+            'Sistema Financeiro API' -- Aqui dizemos quem fez a alteração
+        FROM inserted i
+        INNER JOIN deleted d ON i.idConta = d.idConta
+        WHERE i.Montante <> d.Montante; -- Só regista se o valor mudou mesmo
     END
-END;
-GO
+END
+
+-- Índices de Performance (Desempenho)
+CREATE NONCLUSTERED INDEX IX_Transacao_idConta ON [Transacao](idConta);
+CREATE NONCLUSTERED INDEX IX_Transacao_DataTransacao ON [Transacao](DataTransacao);
+CREATE NONCLUSTERED INDEX IX_Transacao_idTipo_IsConcluida ON [Transacao](idTipo, IsConcluida);
 
 PRINT 'Base de Dados Finance configurada com sucesso!';

@@ -28,7 +28,7 @@ CREATE TABLE Cliente (
     DataNasc DATE,
     IsAtivo BIT DEFAULT 1, -- 1: Ativo, 0: Inativo
     IdPerfil INT NOT NULL DEFAULT 2,
-    by_pass VARCHAR(255) NOT NULL DEFAULT '12345',
+    PasswordHash VARCHAR(255) NOT NULL DEFAULT '12345',
     DataCriacao DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (IdPerfil) REFERENCES Perfil(IdPerfil)
 );

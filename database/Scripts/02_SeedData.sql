@@ -1,5 +1,5 @@
 -- 3. POVOAMENTO INICIAL (SEED DATA)
-INSERT INTO Tipo_Movimento (descricao) VALUES ('Receita'), ('Despesa');
+INSERT INTO Tipo_Movimento (descricao) VALUES ('Receita'), ('Despesa'), ('Transferência');
 
 INSERT INTO Perfil (NomePerfil, Descricao) VALUES 
 ('Admin', 'Acesso total ao sistema e gestão de utilizadores'),
@@ -9,6 +9,13 @@ INSERT INTO Categoria (Nome) VALUES
 ('Salário'), ('Alimentação'), ('Transporte'), ('Lazer'), ('Saúde'), ('Habitação');
 
 -- 4. DADOS DE TESTE
--- Nota: Para o campo BIT, inserimos 1 ou 0.
-INSERT INTO Cliente (nome, email, IsAtivo, IdPerfil, by_pass) 
-VALUES ('Francisco Admin', 'admin@finance.com', 1, 1, '5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5');
+-- Inserção do Admin com Hash gerado no momento do Insert para a senha 'admin123'
+INSERT INTO Cliente (nome, email, IsAtivo, IdPerfil, PasswordHash) 
+VALUES (
+    'Francisco Admin', 
+    'admin@finance.com', 
+    1, 
+    1, 
+    CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', '12345'), 2)
+);
+GO
