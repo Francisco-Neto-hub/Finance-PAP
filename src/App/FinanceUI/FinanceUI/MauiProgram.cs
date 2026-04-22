@@ -15,8 +15,15 @@ namespace FinanceUI
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
+            // Singleton: Existe apenas uma instância do serviço para toda a App
+            builder.Services.AddSingleton<ApiService>();
+
+            // Transient: Cria uma nova instância da página sempre que navegamos para ela
+            builder.Services.AddTransient<LoginPage>();
+            builder.Services.AddTransient<MainPage>();
+
 #if DEBUG
-    		builder.Logging.AddDebug();
+            builder.Logging.AddDebug();
 #endif
 
             return builder.Build();

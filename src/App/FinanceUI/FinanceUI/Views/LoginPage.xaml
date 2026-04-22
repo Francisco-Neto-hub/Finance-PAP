@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FinanceUI.LoginPage"
+             Title="Login">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="25" Padding="30" VerticalOptions="Center">
+
+            <Label Text="Finance PAP" FontSize="32" HorizontalOptions="Center" FontAttributes="Bold" />
+
+            <Entry x:Name="EmailEntry" Placeholder="Email" Keyboard="Email" />
+
+            <Entry x:Name="PassEntry" Placeholder="Password" IsPassword="True" />
+
+            <Button x:Name="BtnLogin" 
+                    Text="Entrar" 
+                    Clicked="AoClicarEntrar" 
+                    HeightRequest="50" />
+
+            <ActivityIndicator x:Name="Indicador" IsRunning="False" HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
