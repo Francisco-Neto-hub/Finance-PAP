@@ -25,6 +25,10 @@ namespace FinanceUI
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
+            // No método CreateMauiApp, antes do return builder.Build();
+            builder.Services.AddSingleton<ApiService>();
+            builder.Services.AddTransient<LoginPage>(); // Importante!
+            builder.Services.AddTransient<MainPage>();
 
             return builder.Build();
         }

@@ -2,11 +2,14 @@
 {
     public partial class App : Application
     {
-        public App()
+        // Ao colocarmos 'LoginPage' no construtor, o MAUI resolve as dependências sozinho
+        public App(LoginPage loginPage)
         {
             InitializeComponent();
 
-            MainPage = new AppShell();
+            // Definimos que a página inicial é a LoginPage dentro de uma NavigationPage
+            // A NavigationPage permite que faças "PushAsync" para outras páginas depois
+            MainPage = new NavigationPage(loginPage);
         }
     }
 }

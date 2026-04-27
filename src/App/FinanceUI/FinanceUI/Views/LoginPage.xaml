@@ -5,21 +5,55 @@
              Title="Login">
 
     <ScrollView>
-        <VerticalStackLayout Spacing="25" Padding="30" VerticalOptions="Center">
+        <VerticalStackLayout Spacing="20" Padding="30" VerticalOptions="Center">
 
-            <Label Text="Finance PAP" FontSize="32" HorizontalOptions="Center" FontAttributes="Bold" />
+            <Label Text="FINANCE"
+           FontSize="32"
+           FontAttributes="Bold"
+           TextColor="CornflowerBlue"
+           HorizontalOptions="Center" />
 
-            <Entry x:Name="EmailEntry" Placeholder="Email" Keyboard="Email" />
+            <Label Text="Bem-vindo! Faça login para continuar."
+           FontSize="16"
+           HorizontalOptions="Center"
+           Margin="0,0,0,20" />
 
-            <Entry x:Name="PassEntry" Placeholder="Password" IsPassword="True" />
+            <Frame Padding="0" CornerRadius="10" HasShadow="False" BorderColor="LightGray">
+                <Entry x:Name="EmailEntry" 
+               Placeholder="Email" 
+               Keyboard="Email"
+               Margin="10,0" />
+            </Frame>
+
+            <Frame Padding="0" CornerRadius="10" HasShadow="False" BorderColor="LightGray">
+                <Entry x:Name="PassEntry" 
+               Placeholder="Palavra-passe" 
+               IsPassword="True"
+               Margin="10,0" />
+            </Frame>
 
             <Button x:Name="BtnLogin" 
-                    Text="Entrar" 
-                    Clicked="AoClicarEntrar" 
-                    HeightRequest="50" />
+            Text="ENTRAR" 
+            Clicked="AoClicarEntrar" 
+            CornerRadius="10"
+            HeightRequest="55"
+            FontAttributes="Bold"
+            BackgroundColor="CornflowerBlue" />
 
-            <ActivityIndicator x:Name="Indicador" IsRunning="False" HorizontalOptions="Center" />
+            <ActivityIndicator x:Name="Indicador" 
+                       IsRunning="False" 
+                       Color="CornflowerBlue"
+                       HorizontalOptions="Center" />
 
+            <Label Text="Não tem conta? " VerticalOptions="Center" />
+            <Label Text="Crie uma aqui" 
+           TextColor="CornflowerBlue" 
+           FontAttributes="Bold"
+           VerticalOptions="Center">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="AoClicarCriarConta" />
+                </Label.GestureRecognizers>
+            </Label>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
