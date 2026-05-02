@@ -36,10 +36,21 @@ const Manual = () => {
       </div>
       
       <div style={{ marginTop: '30px', textAlign: 'center' }}>
-        <button className="btn-download" style={{ padding: '10px 20px', fontSize: '0.9rem', background: '#34495e' }}>
-          <Download size={18} style={{ marginRight: '8px' }} />
-          Versão PDF do Manual
-        </button>
+        {/* Transformamos o button num link <a> com o atributo download */}
+        <a 
+          href="/Manual_Utilizador_Finance.pdf" 
+          download="Manual_Finance.pdf"
+          className="btn-download" 
+          style={{ 
+            padding: '10px 20px', 
+            fontSize: '0.9rem', 
+            textDecoration: 'none', 
+            display: 'inline-flex' 
+          }}
+        >
+          <Download size={18} style={{ marginRight: '10px' }} />
+          Descarregar Manual Completo (PDF)
+        </a>
       </div>
     </section>
   );

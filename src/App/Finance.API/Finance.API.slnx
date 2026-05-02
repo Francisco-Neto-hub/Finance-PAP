@@ -1,4 +1,7 @@
 <Solution>
   <Project Path="../Finance.API.Tests/Finance.API.Tests.csproj" Id="36c0e6a5-d011-42e9-8570-6fbdaa14ba23" />
+  <Project Path="../FinanceUI/FinanceUI.csproj" Id="9668d80f-125e-409f-9cf7-4ed34268f94e">
+    <Deploy Solution="Debug|*" />
+  </Project>
   <Project Path="Finance.API.csproj" />
 </Solution>
