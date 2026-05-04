@@ -2,14 +2,17 @@ namespace FinanceUI.Views;
 
 public partial class LoginPage : ContentPage
 {
-    // Criamos uma vari�vel privada para guardar o servi�o
-    private readonly ApiService _apiService;
+    private readonly ApiService _apiService; // Adicione este campo
+    private readonly MainPage _mainPage;
 
-    // O MAUI injeta o ApiService aqui porque o registaste no MauiProgram
-    public LoginPage(ApiService apiService)
+    // Você deve pedir os DOIS no construtor
+    public LoginPage(ApiService apiService, MainPage mainPage)
     {
         InitializeComponent();
+
+        // Agora você guarda as duas instâncias que o .NET te deu
         _apiService = apiService;
+        _mainPage = mainPage;
     }
 
     private async void AoClicarEntrar(object sender, EventArgs e)
@@ -37,7 +40,7 @@ public partial class LoginPage : ContentPage
                 await SecureStorage.Default.SetAsync("auth_token", token);
 
                 // Dentro da LoginPage.xaml.cs, ap�s validar o login na API:
-                await Navigation.PushAsync(new MainPage());
+                await Navigation.PushAsync(_mainPage);                
                 // OU, se quiseres usar o Menu Lateral (Shell):
                 Application.Current.MainPage = new AppShell();
 

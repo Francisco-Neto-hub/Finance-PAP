@@ -6,7 +6,7 @@ INSERT INTO Perfil (NomePerfil, Descricao) VALUES
 ('Utilizador', 'Acesso apenas aos próprios movimentos financeiros');
 
 INSERT INTO Categoria (Nome) VALUES 
-('Salário'), ('Alimentação'), ('Transporte'), ('Lazer'), ('Saúde'), ('Habitação');
+('Salário'), ('Alimentação'), ('Transporte'), ('Lazer'), ('Saúde'), ('Habitação'), ('Outros');
 
 -- 4. DADOS DE TESTE
 -- Inserção do Admin com Hash gerado no momento do Insert para a senha 'admin123'
