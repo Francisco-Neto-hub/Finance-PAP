@@ -106,7 +106,7 @@ INSERT INTO Tipo_Movimento (descricao) VALUES ('Receita'), ('Despesa'), ('Transf
 INSERT INTO Perfil (NomePerfil, Descricao) VALUES 
 ('Admin', 'Acesso total'), ('Utilizador', 'Acesso limitado');
 INSERT INTO Categoria (Nome) VALUES 
-('Salário'), ('Alimentação'), ('Transporte'), ('Lazer'), ('Saúde'), ('Habitação');
+('Salário'), ('Alimentação'), ('Transporte'), ('Lazer'), ('Saúde'), ('Habitação'), ('Outros');
 
 -- Inserção do Admin com Hash gerado no momento do Insert para a senha 'admin123'
 INSERT INTO Cliente (nome, email, IsAtivo, IdPerfil, PasswordHash) 

@@ -21,15 +21,13 @@ namespace FinanceUI
 
             // Transient: Cria uma nova instância da página sempre que navegamos para ela
             builder.Services.AddTransient<LoginPage>();
+            builder.Services.AddTransient<RegisterPage>();
             builder.Services.AddTransient<MainPage>();
+            builder.Services.AddTransient<TransactionPage>();
 
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
-            // No método CreateMauiApp, antes do return builder.Build();
-            builder.Services.AddSingleton<ApiService>();
-            builder.Services.AddTransient<LoginPage>(); // Importante!
-            builder.Services.AddTransient<MainPage>();
 
             return builder.Build();
         }

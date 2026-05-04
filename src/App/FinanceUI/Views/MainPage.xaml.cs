@@ -1,48 +1,57 @@
 ﻿using FinanceUI;
 using FinanceUI.Models;
+using FinanceUI.Views;
 
 namespace FinanceUI
 {
     public partial class MainPage : ContentPage
     {
-        // Instanciamos o serviço que vai comunicar com a API
-        private readonly ApiService _apiService = new ApiService();
+        private readonly ApiService _apiService;
+        private readonly TransactionPage _transactionPage;
 
-        public MainPage()
+        // O MAUI injeta automaticamente tanto o serviço como a página de transação
+        public MainPage(ApiService apiService, TransactionPage transactionPage)
         {
             InitializeComponent();
+            _apiService = apiService;
+            _transactionPage = transactionPage;
         }
 
-        // Este método é executado automaticamente sempre que a página aparece no ecrã
+        // Método chamado ao clicar no botão "+"
+        private async void AoClicarNovaTransacao(object sender, EventArgs e)
+        {
+            // Navega para a página de registo de transação
+            await Navigation.PushAsync(_transactionPage);
+        }
+
+        // Método que puxa o resumo do Dashboard
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-            await CarregarDadosReais();
-        }
+            var resumo = await _apiService.GetResumoDashboardAsync();
 
-        private async Task CarregarDadosReais()
-        {
-            try
+            if (resumo != null)
             {
-                // NOTA: Por agora, como a tua API usa [Authorize], 
-                // precisas de um token que viria do Login.
-                string tokenTemporario = "COLA_AQUI_UM_TOKEN_DO_SWAGGER";
+                // "C" formata para Moeda local (ex: R$ 3.001,00 ou 3.001,00 €)
+                LblSaldoTotal.Text = resumo.SaldoTotal.ToString("C");
 
-                // Chamada ao endpoint GetMinhasContas da tua API
-                var contas = await _apiService.GetContasAsync();
+                // Atualiza as novas labels de resumo mensal
+                LblReceitas.Text = resumo.TotalReceitasMes.ToString("C");
+                LblDespesas.Text = resumo.TotalDespesasMes.ToString("C");
 
-                if (contas != null && contas.Any())
-                {
-                    // cvContas é o nome da CollectionView que deve estar no teu MainPage.xaml
-                    cvContas.ItemsSource = contas;
-
-                    // lblSaldo é a Label que mostra o somatório dos saldos
-                    lblSaldo.Text = contas.Sum(c => c.Saldo).ToString("C");
-                }
+                // Se quiseres preencher a lista de transações:
+                ListaTransacoes.ItemsSource = resumo.UltimasTransacoes;
             }
-            catch (Exception ex)
+            else
             {
-                await DisplayAlertAsync("Erro", "Não foi possível carregar os dados: " + ex.Message, "OK");
+                LblSaldoTotal.Text = "Erro ao carregar";
+            }
+
+            // 2. Carregar a nova lista de Contas específica
+            var contas = await _apiService.GetContasAsync();
+            if (contas != null && contas.Count > 0)
+            {
+                ListaContas.ItemsSource = resumo.Contas;
             }
         }
     }
