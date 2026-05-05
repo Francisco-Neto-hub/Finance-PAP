@@ -4,17 +4,15 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:FinanceUI"
-    Shell.FlyoutBehavior="Flyout" 
-    Title="Finance System">
+    xmlns:views="clr-namespace:FinanceUI.Views"
+    Title="FinanceUI">
 
     <FlyoutItem Title="Dashboard" Icon="home_icon.png">
-        <ShellContent
-            ContentTemplate="{DataTemplate local:MainPage}"
-            Route="MainPage" />
+        <ShellContent ContentTemplate="{DataTemplate local:MainPage}" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Extrato" Icon="list_icon.png">
-        <ShellContent ContentTemplate="{DataTemplate local:MainPage}" />
+    <FlyoutItem Title="O Meu Perfil" Icon="user_icon.png">
+        <ShellContent ContentTemplate="{DataTemplate views:ProfilePage}" />
     </FlyoutItem>
 
 </Shell>

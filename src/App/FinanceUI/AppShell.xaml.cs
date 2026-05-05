@@ -1,4 +1,6 @@
-﻿namespace FinanceUI
+﻿using FinanceUI.Views;
+
+namespace FinanceUI
 {
     public partial class AppShell : Shell
     {
