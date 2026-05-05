@@ -4,7 +4,11 @@
              xmlns:models="clr-namespace:FinanceUI.Models" 
              x:Class="FinanceUI.MainPage"
              Title="O meu Saldo">
-
+    
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Sair" Clicked="AoClicarSair" Priority="0" />
+    </ContentPage.ToolbarItems>
+    
     <Grid>
         <Grid RowDefinitions="Auto, *" Padding="20" RowSpacing="15">
 

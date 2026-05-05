@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FinanceUI.Views.ProfilePage"
+             Title="O Meu Perfil">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+
+            <Frame BorderColor="CornflowerBlue" CornerRadius="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Alterar Palavra-passe" FontAttributes="Bold" />
+                    <Entry x:Name="AntigaPassEntry" Placeholder="Password Atual" IsPassword="True" />
+                    <Entry x:Name="NovaPassEntry" Placeholder="Nova Password" IsPassword="True" />
+                    <Button Text="Atualizar Password" 
+                            Clicked="AoClicarMudarPass" 
+                            BackgroundColor="CornflowerBlue" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame BorderColor="Orange" CornerRadius="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Recuperação de Emergência" FontAttributes="Bold" />
+                    <Label Text="Use isto se precisar de resetar os dados via telemóvel." FontSize="12" TextColor="Gray"/>
+                    <Entry x:Name="RecuperarEmailEntry" Placeholder="Email" Keyboard="Email" />
+                    <Entry x:Name="RecuperarTelEntry" Placeholder="Telemóvel" Keyboard="Telephone" />
+                    <Entry x:Name="RecuperarNovaPassEntry" Placeholder="Nova Password" IsPassword="True" />
+                    <Button Text="Recuperar Conta" 
+                            Clicked="AoClicarRecuperarPass" 
+                            BackgroundColor="Orange" 
+                            TextColor="Black" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame BorderColor="LightGray" CornerRadius="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Conta" FontAttributes="Bold" FontSize="18" />
+                    <Button Text="Terminar Sessão" Clicked="AoClicarLogout" BackgroundColor="Red" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <ActivityIndicator x:Name="Indicador" IsRunning="False" Color="CornflowerBlue" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

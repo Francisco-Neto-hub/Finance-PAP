@@ -37,6 +37,49 @@ public class ApiService
         return null;
     }
 
+    // Adiciona estes dois métodos à tua classe ApiService
+    public async Task<(bool Sucesso, string Mensagem)> MudarPasswordAsync(string antiga, string nova)
+    {
+        try
+        {
+            var token = await SecureStorage.Default.GetAsync("auth_token");
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var dados = new { PasswordAntiga = antiga, PasswordNova = nova };
+
+            // CORREÇÃO: Mudámos de PostAsJsonAsync para PutAsJsonAsync
+            var response = await _httpClient.PutAsJsonAsync("Auth/mudar-password", dados);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, "Password alterada com sucesso!");
+            }
+            else
+            {
+                string erroDaApi = await response.Content.ReadAsStringAsync();
+                return (false, $"A API recusou ({response.StatusCode}): {erroDaApi}");
+            }
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Erro de ligação: {ex.Message}");
+        }
+    }
+
+    public async Task<bool> RecuperarPasswordAsync(string email, string telemovel, string novaPass)
+    {
+        try
+        {
+            var dados = new { Email = email, Telemovel = telemovel, NovaPassword = novaPass };
+
+            // CORREÇÃO AQUI TAMBÉM (se a tua API usar PUT para recuperar)
+            // Se a recuperação continuar a dar 405 com o PUT, volta a meter PostAsJsonAsync neste método específico.
+            var response = await _httpClient.PutAsJsonAsync("Auth/recuperar-password", dados);
+
+            return response.IsSuccessStatusCode;
+        }
+        catch { return false; }
+    }
     public async Task<DashboardResumo> GetResumoDashboardAsync()
     {
         try
