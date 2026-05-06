@@ -17,7 +17,7 @@ namespace FinanceUI.Models
         public decimal TotalDespesasMes { get; set; }
 
         [JsonPropertyName("Contas")]
-        public List<Conta> Contas { get; set; }
+        public List<ContaDTO> Contas { get; set; }
 
         [JsonPropertyName("ultimasTransacoes")]
         public List<Transacao> UltimasTransacoes { get; set; }

@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using static Finance.API.DTOs.UserDTO;
 
 public class ApiService
 {
@@ -37,6 +38,48 @@ public class ApiService
         return null;
     }
 
+    public async Task<(bool Sucesso, string Mensagem)> RegistarAsync(RegistoRequestDTO dados)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("Auth/registar", dados);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, "Conta criada com sucesso!");
+            }
+            else
+            {
+                // Tenta ler a mensagem de erro da API (ex: "Este email já está registado")
+                var conteudo = await response.Content.ReadAsStringAsync();
+                // Se a API devolve um objeto JSON { "mensagem": "..." }, podes extrair aqui
+                return (false, conteudo);
+            }
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Erro de ligação: {ex.Message}");
+        }
+    }
+
+    public async Task<(bool Sucesso, string Mensagem)> AtualizarPerfilAsync(string nome, string email, string telemovel, DateTime dataNasc)
+    {
+        try
+        {
+            var token = await SecureStorage.Default.GetAsync("auth_token");
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var dados = new { Nome = nome, Email = email, Telemovel = telemovel, DataNasc = dataNasc };
+            var response = await _httpClient.PutAsJsonAsync("User/atualizar-perfil", dados);
+
+            if (response.IsSuccessStatusCode) return (true, "Perfil atualizado!");
+
+            var erro = await response.Content.ReadAsStringAsync();
+            return (false, erro);
+        }
+        catch (Exception ex) { return (false, ex.Message); }
+    }
+
     // Adiciona estes dois métodos à tua classe ApiService
     public async Task<(bool Sucesso, string Mensagem)> MudarPasswordAsync(string antiga, string nova)
     {
@@ -48,7 +91,7 @@ public class ApiService
             var dados = new { PasswordAntiga = antiga, PasswordNova = nova };
 
             // CORREÇÃO: Mudámos de PostAsJsonAsync para PutAsJsonAsync
-            var response = await _httpClient.PutAsJsonAsync("Auth/mudar-password", dados);
+            var response = await _httpClient.PutAsJsonAsync("User/mudar-password", dados);
 
             if (response.IsSuccessStatusCode)
             {
@@ -66,19 +109,27 @@ public class ApiService
         }
     }
 
-    public async Task<bool> RecuperarPasswordAsync(string email, string telemovel, string novaPass)
+    public async Task<(bool Sucesso, string Mensagem)> RecuperarPasswordAsync(string email, string telemovel, string novaPassword)
     {
         try
         {
-            var dados = new { Email = email, Telemovel = telemovel, NovaPassword = novaPass };
+            var dados = new { Email = email, Telemovel = telemovel, NovaPassword = novaPassword };
 
-            // CORREÇÃO AQUI TAMBÉM (se a tua API usar PUT para recuperar)
-            // Se a recuperação continuar a dar 405 com o PUT, volta a meter PostAsJsonAsync neste método específico.
-            var response = await _httpClient.PutAsJsonAsync("Auth/recuperar-password", dados);
+            // Aqui não passamos Token, porque o utilizador não está logado
+            var response = await _httpClient.PostAsJsonAsync("User/recuperar-password", dados);
 
-            return response.IsSuccessStatusCode;
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, "Password recuperada com sucesso!");
+            }
+
+            var erro = await response.Content.ReadAsStringAsync();
+            return (false, erro);
         }
-        catch { return false; }
+        catch (Exception ex)
+        {
+            return (false, $"Erro: {ex.Message}");
+        }
     }
     public async Task<DashboardResumo> GetResumoDashboardAsync()
     {
@@ -105,22 +156,45 @@ public class ApiService
             return null;
         }
     }
-    public async Task<List<ContaExemplo>> GetContasAsync()
+
+    // 1. LISTAR CONTAS
+    public async Task<List<ContaDTO>> GetContasAsync()
     {
-        // 1. Ir buscar o token guardado no login
-        var token = await SecureStorage.Default.GetAsync("auth_token");
-
-        // 2. Adicionar o token no cabeçalho para a API te deixar entrar (Authorize)
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-        // 3. Chamar o endpoint que criaste no ContasController
-        var response = await _httpClient.GetAsync("Contas/dropdown");
-
-        if (response.IsSuccessStatusCode)
+        try
         {
-            return await response.Content.ReadFromJsonAsync<List<ContaExemplo>>();
+            var token = await SecureStorage.Default.GetAsync("auth_token");
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _httpClient.GetAsync("Contas/dropdown");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<List<ContaDTO>>() ?? new List<ContaDTO>();
+            }
+            return new List<ContaDTO>();
         }
-        return new List<ContaExemplo>();
+        catch { return new List<ContaDTO>(); }
+    }
+
+    public async Task<UserUpdateDTO> ObterPerfilAsync()
+    {
+        try
+        {
+            var token = await SecureStorage.Default.GetAsync("auth_token");
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _httpClient.GetAsync("User/perfil");
+
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<UserUpdateDTO>();
+            }
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Erro ao buscar perfil: {ex.Message}");
+            return null;
+        }
     }
 
     public async Task<List<TransacaoReadDTO>> ObterExtratoAsync(int idConta, DateTime? dataInicio = null, DateTime? dataFim = null)
@@ -155,7 +229,43 @@ public class ApiService
         }
     }
 
-    public async Task<bool> PostTransacaoAsync(TransacaoRequest transacao)
+    // CRIAR CONTA
+    public async Task<(bool Sucesso, string Mensagem)> CriarContaAsync(string nomeConta, decimal montanteInicial)
+    {
+        try
+        {
+            var token = await SecureStorage.Default.GetAsync("auth_token");
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var dados = new ContaUserCreateDTO { NomeConta = nomeConta, Montante = montanteInicial };
+            var response = await _httpClient.PostAsJsonAsync("Contas/nova_conta", dados);
+
+            if (response.IsSuccessStatusCode) return (true, "Conta criada com sucesso!");
+
+            return (false, await response.Content.ReadAsStringAsync());
+        }
+        catch (Exception ex) { return (false, ex.Message); }
+    }
+
+    // 3. FECHAR CONTA
+    public async Task<(bool Sucesso, string Mensagem)> FecharContaAsync(int idConta)
+    {
+        try
+        {
+            var token = await SecureStorage.Default.GetAsync("auth_token");
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            // Como é um PUT sem corpo (body), enviamos null
+            var response = await _httpClient.PutAsync($"Contas/{idConta}/fechar_conta", null);
+
+            if (response.IsSuccessStatusCode) return (true, "Conta encerrada.");
+
+            return (false, await response.Content.ReadAsStringAsync());
+        }
+        catch (Exception ex) { return (false, ex.Message); }
+    }
+
+    public async Task<bool> PostTransacaoAsync(TransacaoRequestDTO transacao)
     {
         try
         {
@@ -199,4 +309,3 @@ public class ApiService
 
 // Classes auxiliares para o JSON
 public class TokenResponse { public required string Token { get; set; } }
-public class ContaExemplo { public int Id { get; set; } public required string Nome { get; set; } public decimal Saldo { get; set; } }

@@ -1,9 +1,11 @@
 ﻿using System;
-using System.Text.Json.Serialization; // Não te esqueças de adicionar este using
+using System.Collections.Generic;
+using System.Text;
+using System.Text.Json.Serialization;
 
 namespace FinanceUI.Models
 {
-    public class TransacaoRequest
+    public class TransacaoRequestDTO
     {
         [JsonPropertyName("nomeTransacao")]
         public string NomeTransacao { get; set; }
@@ -24,6 +26,6 @@ namespace FinanceUI.Models
         public int IdTipo { get; set; }
 
         [JsonPropertyName("idContaDestino")]
-        public int? IdContaDestino { get; set; } // O '?' permite que seja nulo em Receitas/Despesas
+        public int? IdContaDestino { get; set; }
     }
 }

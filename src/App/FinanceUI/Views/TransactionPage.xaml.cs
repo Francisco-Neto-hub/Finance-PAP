@@ -6,7 +6,7 @@ namespace FinanceUI.Views;
 public partial class TransactionPage : ContentPage
 {
     private readonly ApiService _apiService;
-    private List<ContaExemplo> _contas;
+    private List<ContaDTO> _contas;
 
     // O construtor recebe o ApiService via Injeção de Dependência conforme configurado no MauiProgram
     public TransactionPage(ApiService apiService)
@@ -94,7 +94,7 @@ public partial class TransactionPage : ContentPage
         BtnGuardar.IsEnabled = false;
 
         // Obtemos a conta selecionada
-        var contaSelecionada = (ContaExemplo)ContaPicker.SelectedItem;
+        var contaSelecionada = (ContaDTO)ContaPicker.SelectedItem;
 
         // --- LÓGICA DE TRADUÇÃO PARA A API ---
 
@@ -123,7 +123,7 @@ public partial class TransactionPage : ContentPage
         DateTime dataFinalComHora = dataSelecionada.Add(horaAtual);
 
         // 3. Preparar os dados (TransacaoRequest) alinhados com o Backend
-        var dados = new TransacaoRequest
+        var dados = new TransacaoRequestDTO
         {
             NomeTransacao = DescricaoEntry.Text,
             ValorTransacao = valorDigitado,     // Vai sempre positivo (a API trata do resto)
@@ -132,7 +132,7 @@ public partial class TransactionPage : ContentPage
             IdContaOrigem = contaSelecionada.Id,// Nome corrigido para bater com a API
             IdTipo = tipoId,                     // Enviamos 1 ou 2 em vez de texto
             // Só tenta ler a conta de destino se for uma transferência
-            IdContaDestino = RadioTransferencia.IsChecked ? ((ContaExemplo)ContaDestinoPicker.SelectedItem).Id : null
+            IdContaDestino = RadioTransferencia.IsChecked ? ((ContaDTO)ContaDestinoPicker.SelectedItem).Id : null
         };
 
         try

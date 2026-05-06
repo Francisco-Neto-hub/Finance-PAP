@@ -20,14 +20,6 @@
                    Placeholder="Email" 
                    Keyboard="Email" />
 
-            <Entry x:Name="TelemovelEntry" 
-                   Placeholder="Telemóvel" 
-                   Keyboard="Telephone" />
-
-            <Label Text="Data de Nascimento:" Margin="0,10,0,0" />
-            <DatePicker x:Name="DataNascPicker" 
-                        Format="yyyy-MM-dd" />
-
             <Entry x:Name="PassEntry" 
                    Placeholder="Palavra-passe" 
                    IsPassword="True" />
@@ -35,6 +27,14 @@
             <Entry x:Name="ConfirmPassEntry" 
                    Placeholder="Confirmar Palavra-passe" 
                    IsPassword="True" />
+
+            <Entry x:Name="TelemovelEntry" 
+                   Placeholder="Telemóvel" 
+                   Keyboard="Telephone" />
+
+            <Label Text="Data de Nascimento:" Margin="0,10,0,0" />
+            <DatePicker x:Name="DataNascPicker" 
+                        Format="yyyy-MM-dd" />
 
             <Button x:Name="BtnRegistar" 
                     Text="Criar Conta" 

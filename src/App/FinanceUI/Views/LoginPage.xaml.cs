@@ -61,10 +61,17 @@ public partial class LoginPage : ContentPage
             BtnLogin.IsEnabled = true;
         }
     }
+
+    private async void AoClicarEsqueciPassword(object sender, EventArgs e)
+    {
+        // Navega para a página de recuperação passando o ApiService
+        await Navigation.PushAsync(new RecuperarPasswordPage(_apiService));
+    }
+
     private async void AoClicarCriarConta(object sender, EventArgs e)
     {
         // Navega para a p�gina de registo
         // Usamos PushAsync para que o utilizador possa voltar atr�s para o Login se quiser
-        await Navigation.PushAsync(new RegisterPage());
+        await Navigation.PushAsync(new RegisterPage(_apiService));
     }
 }

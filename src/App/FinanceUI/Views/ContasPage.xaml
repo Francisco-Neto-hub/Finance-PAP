@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FinanceUI.Views.ContasPage"
+             Title="As Minhas Contas">
+
+    <Grid RowDefinitions="Auto, *" Padding="15">
+
+        <VerticalStackLayout Grid.Row="0" Spacing="10" Margin="0,0,0,15">
+            <Button Text="+ Adicionar Nova Conta" 
+                    Clicked="AoClicarMostrarFormulario" 
+                    BackgroundColor="CornflowerBlue" 
+                    CornerRadius="8" 
+                    HeightRequest="45"/>
+
+            <Frame x:Name="FormNovaConta" IsVisible="False" BorderColor="LightGray" CornerRadius="8" Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Entry x:Name="NomeContaEntry" Placeholder="Nome da Conta (ex: Poupança)" />
+                    <Entry x:Name="SaldoInicialEntry" Placeholder="Saldo Inicial (ex: 100.00)" Keyboard="Numeric" />
+
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
+                        <Button Grid.Column="0" Text="Cancelar" BackgroundColor="LightGray" TextColor="Black" Clicked="AoClicarCancelar"/>
+                        <Button Grid.Column="1" Text="Guardar" BackgroundColor="MediumSeaGreen" Clicked="AoClicarGuardarConta"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+        </VerticalStackLayout>
+
+        <RefreshView Grid.Row="1" x:Name="RefreshContas" Refreshing="AoAtualizarLista">
+            <CollectionView x:Name="ListaContas" EmptyView="Não tens contas abertas.">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Fechar Conta" 
+                                               IconImageSource="delete_icon.png" 
+                                               BackgroundColor="IndianRed" 
+                                               Invoked="AoFazerSwipeFechar"
+                                               CommandParameter="{Binding .}"/>
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+
+                            <Frame Margin="0,5" Padding="20" BorderColor="LightGray" CornerRadius="10" HasShadow="True">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <Label Grid.Column="0" Text="{Binding NomeConta}" FontAttributes="Bold" FontSize="18" VerticalOptions="Center"/>
+
+                                    <Label Grid.Column="1" Text="{Binding MontanteFormatado}" FontSize="18" TextColor="CornflowerBlue" FontAttributes="Bold" VerticalOptions="Center"/>
+                                </Grid>
+                            </Frame>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>
