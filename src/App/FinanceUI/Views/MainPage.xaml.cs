@@ -64,7 +64,7 @@ namespace FinanceUI
             }
 
             // 2. Carregar a nova lista de Contas específica
-            var contas = await _apiService.GetContasAsync();
+            List<ContaDTO> contas = await _apiService.GetContasAsync();
             if (contas != null && contas.Count > 0)
             {
                 ListaContas.ItemsSource = resumo.Contas;

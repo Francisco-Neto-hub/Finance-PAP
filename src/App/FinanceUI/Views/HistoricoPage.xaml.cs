@@ -5,7 +5,7 @@ namespace FinanceUI.Views;
 public partial class HistoricoPage : ContentPage
 {
     private readonly ApiService _apiService;
-    private List<ContaExemplo> _contas;
+    private List<ContaDTO> _contas;
 
     public HistoricoPage(ApiService apiService)
     {
@@ -39,7 +39,7 @@ public partial class HistoricoPage : ContentPage
 
     private async Task CarregarExtrato()
     {
-        var contaSelecionada = (ContaExemplo)ContaPicker.SelectedItem;
+        var contaSelecionada = (ContaDTO)ContaPicker.SelectedItem;
         if (contaSelecionada == null) return;
 
         ListaTransacoes.ItemsSource = null;

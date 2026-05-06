@@ -1,46 +1,79 @@
+using FinanceUI.Models;
+
 namespace FinanceUI.Views;
 
 public partial class RegisterPage : ContentPage
 {
-    public RegisterPage()
+    private readonly ApiService _apiService;
+    
+    // Injeção de dependência no construtor
+    public RegisterPage(ApiService apiService)
     {
         InitializeComponent();
+        _apiService = apiService;
+
+        // Sugestão: Definir uma data máxima para o picker (ex: 18 anos atrás)
+        DataNascPicker.MaximumDate = DateTime.Now.AddYears(-18);
     }
 
     private async void AoClicarRegistar(object sender, EventArgs e)
     {
-        // 1. Valida��es b�sicas
+        // 1. Validações básicas de UI
         if (string.IsNullOrWhiteSpace(NomeEntry.Text) ||
             string.IsNullOrWhiteSpace(EmailEntry.Text) ||
+            string.IsNullOrWhiteSpace(TelemovelEntry.Text) ||
             string.IsNullOrWhiteSpace(PassEntry.Text))
         {
-            await DisplayAlertAsync("Erro", "Por favor, preencha os campos obrigat�rios.", "OK");
+            await DisplayAlertAsync("Erro", "Por favor, preencha todos os campos.", "OK");
             return;
         }
 
         if (PassEntry.Text != ConfirmPassEntry.Text)
         {
-            await DisplayAlertAsync("Erro", "As palavras-passe n�o coincidem!", "OK");
+            await DisplayAlertAsync("Erro", "As palavras-passe não coincidem!", "OK");
             return;
         }
 
-        // 2. Iniciar anima��o de carregamento
+        if (PassEntry.Text.Length < 6)
+        {
+            await DisplayAlertAsync("Erro", "A palavra-passe deve ter pelo menos 6 caracteres.", "OK");
+            return;
+        }
+
+        // 2. Iniciar animação
         Indicador.IsRunning = true;
         BtnRegistar.IsEnabled = false;
 
         try
         {
-            // AQUI: No futuro, chamaremos o teu ApiService.PostAsync("/api/Auth/registo", ...)
-            await Task.Delay(2000); // Simula��o de rede
+            // Criar o objeto com os dados dos campos
+            var novoRegisto = new RegistoRequestDTO
+            {
+                Nome = NomeEntry.Text,
+                Email = EmailEntry.Text,
+                Telemovel = TelemovelEntry.Text,
+                DataNasc = (DateTime)DataNascPicker.Date,
+                Password = PassEntry.Text
+            };
 
-            await DisplayAlertAsync("Sucesso", "Conta criada com sucesso! Fa�a login agora.", "OK");
+            // 3. Chamada à API
+            var resultado = await _apiService.RegistarAsync(novoRegisto);
 
-            // Volta para a p�gina de Login
-            await Navigation.PopAsync();
+            if (resultado.Sucesso)
+            {
+                await DisplayAlertAsync("Sucesso", "Conta criada com sucesso! Já pode fazer login.", "OK");
+
+                // Navega de volta para a página anterior (Login)
+                await Navigation.PopAsync();
+            }
+            else
+            {
+                await DisplayAlertAsync("Erro no Registo", resultado.Mensagem, "OK");
+            }
         }
         catch (Exception ex)
         {
-            await DisplayAlertAsync("Erro", $"Falha no registo: {ex.Message}", "OK");
+            await DisplayAlertAsync("Erro Crítico", ex.Message, "OK");
         }
         finally
         {

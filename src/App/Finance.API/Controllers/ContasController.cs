@@ -29,7 +29,10 @@ namespace Finance.API.Controllers
 
             using var connection = _context.CreateConnection();
             var query = @"
-                SELECT C.idConta as Id, C.NomeConta as Nome, C.Montante as Saldo
+                    SELECT 
+                    C.idConta as Id, 
+                    C.NomeConta,       -- (Antes estava C.NomeConta as Nome)
+                    C.Montante         -- (Antes estava C.Montante as Saldo)
                 FROM Conta C
                 INNER JOIN Contrato_Cliente CC ON C.idContrato = CC.idContrato
                 WHERE CC.idCliente = @IdCliente AND C.IsAberta = 1";

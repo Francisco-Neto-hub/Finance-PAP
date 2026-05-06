@@ -40,6 +40,12 @@
             FontAttributes="Bold"
             BackgroundColor="CornflowerBlue" />
 
+            <Button Text="Esqueci-me da password" 
+            Clicked="AoClicarEsqueciPassword" 
+            BackgroundColor="Transparent" 
+            TextColor="CornflowerBlue" 
+            FontSize="14" />
+
             <ActivityIndicator x:Name="Indicador" 
                        IsRunning="False" 
                        Color="CornflowerBlue"

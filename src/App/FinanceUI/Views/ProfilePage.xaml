@@ -7,28 +7,61 @@
     <ScrollView>
         <VerticalStackLayout Spacing="20" Padding="20">
 
-            <Frame BorderColor="CornflowerBlue" CornerRadius="10">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Alterar Palavra-passe" FontAttributes="Bold" />
-                    <Entry x:Name="AntigaPassEntry" Placeholder="Password Atual" IsPassword="True" />
-                    <Entry x:Name="NovaPassEntry" Placeholder="Nova Password" IsPassword="True" />
-                    <Button Text="Atualizar Password" 
-                            Clicked="AoClicarMudarPass" 
-                            BackgroundColor="CornflowerBlue" />
+            <Frame BorderColor="LightGray" CornerRadius="10" Padding="20" HasShadow="True">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Dados Pessoais" FontAttributes="Bold" FontSize="18" TextColor="CornflowerBlue"/>
+
+                    <VerticalStackLayout>
+                        <Label Text="Nome Completo" FontSize="12" TextColor="Gray"/>
+                        <Entry x:Name="NomeEntry" Placeholder="O teu nome" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout>
+                        <Label Text="Email" FontSize="12" TextColor="Gray"/>
+                        <Entry x:Name="EmailEntry" Keyboard="Email" Placeholder="O teu email" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout>
+                        <Label Text="Telemóvel" FontSize="12" TextColor="Gray"/>
+                        <Entry x:Name="TelemovelEntry" Keyboard="Telephone" Placeholder="O teu telemóvel" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout>
+                        <Label Text="Data de Nascimento" FontSize="12" TextColor="Gray"/>
+                        <DatePicker x:Name="DataNascPicker" Format="yyyy-MM-dd" />
+                    </VerticalStackLayout>
+
+                    <Button Text="Guardar Alterações" 
+                            Clicked="AoClicarGuardarPerfil" 
+                            BackgroundColor="CornflowerBlue" 
+                            TextColor="White"
+                            CornerRadius="8"
+                            HeightRequest="45"
+                            Margin="0,10,0,0"/>
                 </VerticalStackLayout>
             </Frame>
 
-            <Frame BorderColor="Orange" CornerRadius="10">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Recuperação de Emergência" FontAttributes="Bold" />
-                    <Label Text="Use isto se precisar de resetar os dados via telemóvel." FontSize="12" TextColor="Gray"/>
-                    <Entry x:Name="RecuperarEmailEntry" Placeholder="Email" Keyboard="Email" />
-                    <Entry x:Name="RecuperarTelEntry" Placeholder="Telemóvel" Keyboard="Telephone" />
-                    <Entry x:Name="RecuperarNovaPassEntry" Placeholder="Nova Password" IsPassword="True" />
-                    <Button Text="Recuperar Conta" 
-                            Clicked="AoClicarRecuperarPass" 
+            <Frame BorderColor="LightGray" CornerRadius="10" Padding="20" HasShadow="True">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Segurança" FontAttributes="Bold" FontSize="18" TextColor="Orange"/>
+
+                    <VerticalStackLayout>
+                        <Label Text="Password Atual" FontSize="12" TextColor="Gray"/>
+                        <Entry x:Name="AntigaPassEntry" IsPassword="True" Placeholder="Insere a password atual"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout>
+                        <Label Text="Nova Password" FontSize="12" TextColor="Gray"/>
+                        <Entry x:Name="NovaPassEntry" IsPassword="True" Placeholder="Insere a nova password"/>
+                    </VerticalStackLayout>
+
+                    <Button Text="Mudar Password" 
+                            Clicked="AoClicarMudarPass" 
                             BackgroundColor="Orange" 
-                            TextColor="Black" />
+                            TextColor="White"
+                            CornerRadius="8"
+                            HeightRequest="45"
+                            Margin="0,10,0,0"/>
                 </VerticalStackLayout>
             </Frame>
 

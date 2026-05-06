@@ -24,7 +24,7 @@
                 <Label Text="As minhas Contas" FontSize="18" FontAttributes="Bold" />
                 <CollectionView x:Name="ListaContas" HeightRequest="110" ItemsLayout="HorizontalList">
                     <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:Conta">
+                        <DataTemplate x:DataType="models:ContaDTO">
                             <Frame Margin="0,5,10,5" Padding="15" WidthRequest="160" BackgroundColor="White" BorderColor="#E0E0E0" CornerRadius="10">
                                 <VerticalStackLayout VerticalOptions="Center">
                                     <Label Text="{Binding NomeConta}" FontSize="12" TextColor="Gray" />

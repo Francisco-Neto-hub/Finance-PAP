@@ -22,9 +22,11 @@ namespace FinanceUI
             // Transient: Cria uma nova instância da página sempre que navegamos para ela
             builder.Services.AddTransient<LoginPage>();
             builder.Services.AddTransient<RegisterPage>();
+            builder.Services.AddTransient<RecuperarPasswordPage>();
             builder.Services.AddTransient<MainPage>();
             builder.Services.AddTransient<TransactionPage>();
             builder.Services.AddTransient<ProfilePage>();
+            builder.Services.AddTransient<ContasPage>();
             builder.Services.AddTransient<HistoricoPage>();
 
 #if DEBUG

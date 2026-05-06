@@ -5,15 +5,12 @@ using System.Text.Json.Serialization;
 
 namespace FinanceUI.Models
 {
-    public class Conta
+    public class ContaUserCreateDTO
     {
         [JsonPropertyName("nomeConta")]
         public string NomeConta { get; set; }
 
         [JsonPropertyName("montante")]
         public decimal Montante { get; set; }
-
-        // Propriedade para exibir o valor formatado
-        public string MontanteFormatado => Montante.ToString("C");
     }
 }
