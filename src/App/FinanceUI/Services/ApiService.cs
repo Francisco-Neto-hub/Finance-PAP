@@ -123,6 +123,38 @@ public class ApiService
         return new List<ContaExemplo>();
     }
 
+    public async Task<List<TransacaoReadDTO>> ObterExtratoAsync(int idConta, DateTime? dataInicio = null, DateTime? dataFim = null)
+    {
+        var token = await SecureStorage.Default.GetAsync("auth_token");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        string url = $"Transacoes/extrato/{idConta}"; 
+        var parametros = new List<string>();
+
+        if (dataInicio.HasValue)
+            parametros.Add($"dataInicio={dataInicio.Value:yyyy-MM-dd}");
+
+        if (dataFim.HasValue)
+            parametros.Add($"dataFim={dataFim.Value:yyyy-MM-dd}");
+
+        if (parametros.Any())
+            url += "?" + string.Join("&", parametros);
+
+        var response = await _httpClient.GetAsync(url);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var extrato = await response.Content.ReadFromJsonAsync<List<TransacaoReadDTO>>();
+            return extrato ?? new List<TransacaoReadDTO>();
+        }
+        else
+        {
+            // AQUI ESTÁ A MAGIA: Lemos o erro da API e "atiramos" para a página ler!
+            string erroDaApi = await response.Content.ReadAsStringAsync();
+            throw new Exception($"API devolveu {response.StatusCode}: {erroDaApi}");
+        }
+    }
+
     public async Task<bool> PostTransacaoAsync(TransacaoRequest transacao)
     {
         try

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FinanceUI.Views.HistoricoPage"
+             Title="Histórico de Transações">
+
+    <Grid RowDefinitions="Auto, Auto, *">
+
+        <Frame Grid.Row="0" Margin="15,15,15,5" Padding="10" BorderColor="LightGray" CornerRadius="8">
+            <Picker x:Name="ContaPicker" 
+                    Title="Selecione a Conta..." 
+                    ItemDisplayBinding="{Binding Nome}"
+                    SelectedIndexChanged="AoMudarConta"/>
+        </Frame>
+
+        <Frame Grid.Row="1" Margin="15,5,15,15" Padding="10" BorderColor="LightGray" CornerRadius="8">
+            <VerticalStackLayout Spacing="10">
+                <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
+                    <VerticalStackLayout Grid.Column="0">
+                        <Label Text="Data Início" FontSize="12" TextColor="Gray"/>
+                        <DatePicker x:Name="DataInicioPicker" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="1">
+                        <Label Text="Data Fim" FontSize="12" TextColor="Gray"/>
+                        <DatePicker x:Name="DataFimPicker" />
+                    </VerticalStackLayout>
+                </Grid>
+                <Button Text="Aplicar Filtros" Clicked="AoClicarFiltrar" BackgroundColor="CornflowerBlue" HeightRequest="40" CornerRadius="8"/>
+            </VerticalStackLayout>
+        </Frame>
+
+        <RefreshView Grid.Row="2" x:Name="RefreshExtrato" Refreshing="AoAtualizarLista">
+            <CollectionView x:Name="ListaTransacoes" EmptyView="Nenhuma transação encontrada.">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Margin="15,5" Padding="15" BorderColor="Transparent" CornerRadius="10" HasShadow="True">
+                            <Grid ColumnDefinitions="Auto, *, Auto">
+                                <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" WidthRequest="70">
+                                    <Label Text="{Binding Categoria}" FontAttributes="Bold" FontSize="14" />
+                                    <Label Text="{Binding DataTransacao, StringFormat='{0:dd/MM}'}" FontSize="12" TextColor="Gray" />
+                                </VerticalStackLayout>
+
+                                <Label Grid.Column="1" Text="{Binding NomeTransacao}" VerticalOptions="Center" Margin="10,0" LineBreakMode="TailTruncation" />
+
+                                <HorizontalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="2">
+                                    <Label Text="{Binding Sinal}" TextColor="{Binding CorSinal}" FontAttributes="Bold" FontSize="16" />
+                                    <Label Text="{Binding ValorTransacao, StringFormat='{0:N2} €'}" TextColor="{Binding CorSinal}" FontAttributes="Bold" FontSize="16" />
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <ActivityIndicator Grid.Row="2" x:Name="Indicador" IsRunning="False" Color="CornflowerBlue" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+    </Grid>
+</ContentPage>

@@ -124,48 +124,7 @@ namespace Finance.API.Controllers
 
                 return StatusCode(500, new { mensagem = "Erro ao registar a transação.", erro = ex.Message });
             }
-        }
-        /// <summary>
-        /// Obtem o Extrato de uma conta específica.
-        /// </summary>
-        /// <remarks>
-        /// Utiliza uma query para buscar as transações.
-        /// </remarks>
-        /// <param name="idConta">ID da conta da qual quer o extrato.</param>
-
-        [HttpGet("conta/{idConta}")]
-        public async Task<IActionResult> ObterExtrato(int idConta)
-        {
-            try
-            {
-                var idClienteClaim = User.FindFirst("idCliente")?.Value;
-                using var connection = _context.CreateConnection();
-
-                var query = @"
-                    SELECT 
-                        T.idTransacao, 
-                        TM.Descricao AS TipoMovimento, 
-                        C.Nome AS Categoria, 
-                        T.ValorTransacao, 
-                        T.NomeTransacao, 
-                        T.DataTransacao, 
-                        T.IsConcluida
-                    FROM Transacao T
-                    INNER JOIN Tipo_Movimento TM ON T.idTipo = TM.idTipo
-                    INNER JOIN Categoria C ON T.idCategoria = C.idCategoria
-                    INNER JOIN Conta CO ON T.idConta = CO.idConta
-                    INNER JOIN Contrato_Cliente CC ON CO.idContrato = CC.idContrato
-                    WHERE CC.idCliente = @IdCliente AND T.idConta = @IdConta
-                    ORDER BY T.DataTransacao DESC";
-
-                var extrato = await connection.QueryAsync<TransacaoReadDTO>(query, new { IdCliente = idClienteClaim, IdConta = idConta });
-                return Ok(extrato);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { mensagem = "Erro ao obter extrato.", erro = ex.Message });
-            }
-        }
+        }        
 
         /// <summary>
         /// Obtem o Extrato de uma conta específica com filto entre datas.
