@@ -19,7 +19,15 @@ namespace FinanceUI.Models
         [JsonPropertyName("Contas")]
         public List<ContaDTO> Contas { get; set; }
 
+        [JsonPropertyName("gastosPorCategoria")]
+        public List<GastoCategoriaResumoDTO> GastosPorCategoria { get; set; }
+
         [JsonPropertyName("ultimasTransacoes")]
         public List<Transacao> UltimasTransacoes { get; set; }
+    }
+    public class GastoCategoriaResumoDTO
+    {
+        public string Categoria { get; set; }
+        public decimal TotalGasto { get; set; }
     }
 }

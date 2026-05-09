@@ -19,6 +19,14 @@
         <ShellContent ContentTemplate="{DataTemplate views:HistoricoPage}" />
     </FlyoutItem>
 
+    <FlyoutItem Title="Relatórios" Icon="report_text.png">
+        <ShellContent ContentTemplate="{DataTemplate views:RelatoriosPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Gráficos" Icon="chart_pie.png">
+        <ShellContent ContentTemplate="{DataTemplate views:GraficosPage}" />
+    </FlyoutItem>
+
     <FlyoutItem Title="O Meu Perfil" Icon="user_icon.png">
         <ShellContent ContentTemplate="{DataTemplate views:ProfilePage}" />
     </FlyoutItem>

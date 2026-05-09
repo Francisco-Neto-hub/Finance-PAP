@@ -1,5 +1,6 @@
 ﻿using FinanceUI.Views;
 using Microsoft.Extensions.Logging;
+using SkiaSharp.Views.Maui.Controls.Hosting; // ADICIONAR ISTO
 
 namespace FinanceUI
 {
@@ -10,6 +11,7 @@ namespace FinanceUI
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseSkiaSharp() // ADICIONAR ESTA LINHA AQUUUIII! É ela que impede o crash!
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -28,6 +30,8 @@ namespace FinanceUI
             builder.Services.AddTransient<ProfilePage>();
             builder.Services.AddTransient<ContasPage>();
             builder.Services.AddTransient<HistoricoPage>();
+            builder.Services.AddTransient<RelatoriosPage>();
+            builder.Services.AddTransient<GraficosPage>();
 
 #if DEBUG
             builder.Logging.AddDebug();

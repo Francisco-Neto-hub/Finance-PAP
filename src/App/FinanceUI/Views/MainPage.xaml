@@ -2,100 +2,116 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:FinanceUI.Models" 
+             xmlns:micro="clr-namespace:Microcharts.Maui;assembly=Microcharts.Maui"
              x:Class="FinanceUI.MainPage"
-             Title="O meu Saldo">
-    
+             Title="O meu Saldo"
+             BackgroundColor="#121212">
+
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Sair" Clicked="AoClicarSair" Priority="0" />
     </ContentPage.ToolbarItems>
-    
+
     <Grid>
-        <Grid RowDefinitions="Auto, *" Padding="20" RowSpacing="15">
 
-            <VerticalStackLayout Grid.Row="0" Spacing="15">
+        <CollectionView x:Name="ListaTransacoes" Margin="15,0">
 
-                <Frame BackgroundColor="#512BD4" CornerRadius="15" HasShadow="True" HeightRequest="120">
-                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
-                        <Label Text="Saldo Total" TextColor="White" FontSize="16" HorizontalOptions="Center"/>
-                        <Label x:Name="LblSaldoTotal" Text="0.00 €" TextColor="White" FontSize="32" FontAttributes="Bold" HorizontalOptions="Center"/>
+            <CollectionView.Header>
+                <VerticalStackLayout Spacing="20" Padding="0,20,0,10">
+
+                    <Frame BackgroundColor="#512BD4" BorderColor="Transparent" CornerRadius="15" HasShadow="True" HeightRequest="120">
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
+                            <Label Text="Saldo Total" TextColor="#D1C4E9" FontSize="14" HorizontalOptions="Center"/>
+                            <Label x:Name="LblSaldoTotal" Text="0.00 €" TextColor="White" FontSize="36" FontAttributes="Bold" HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="As minhas Contas" TextColor="White" FontSize="18" FontAttributes="Bold" />
+
+                        <CollectionView x:Name="ListaContas" HeightRequest="90" ItemsLayout="HorizontalList">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:ContaDTO">
+                                    <Frame Margin="0,0,10,0" Padding="15" WidthRequest="160" BackgroundColor="#1E1E1E" BorderColor="#333" CornerRadius="12">
+                                        <VerticalStackLayout VerticalOptions="Center">
+                                            <Label Text="{Binding NomeConta}" FontSize="12" TextColor="#A0A0A0" />
+                                            <Label Text="{Binding MontanteFormatado}" FontSize="18" FontAttributes="Bold" TextColor="#AC94F4" />
+                                        </VerticalStackLayout>
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
                     </VerticalStackLayout>
-                </Frame>
 
-                <Label Text="As minhas Contas" FontSize="18" FontAttributes="Bold" />
-                <CollectionView x:Name="ListaContas" HeightRequest="110" ItemsLayout="HorizontalList">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:ContaDTO">
-                            <Frame Margin="0,5,10,5" Padding="15" WidthRequest="160" BackgroundColor="White" BorderColor="#E0E0E0" CornerRadius="10">
-                                <VerticalStackLayout VerticalOptions="Center">
-                                    <Label Text="{Binding NomeConta}" FontSize="12" TextColor="Gray" />
-                                    <Label Text="{Binding MontanteFormatado}" FontSize="18" FontAttributes="Bold" TextColor="#512BD4" />
-                                </VerticalStackLayout>
-                            </Frame>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
-                    <Frame Grid.Column="0" Padding="10" CornerRadius="10" BackgroundColor="#E8F5E9" BorderColor="Transparent">
-                        <VerticalStackLayout>
-                            <Label Text="Receitas" FontSize="12" TextColor="#2E7D32" HorizontalOptions="Center"/>
-                            <Label x:Name="LblReceitas" Text="0.00 €" FontSize="16" FontAttributes="Bold" TextColor="#2E7D32" HorizontalOptions="Center"/>
-                        </VerticalStackLayout>
-                    </Frame>
-
-                    <Frame Grid.Column="1" Padding="10" CornerRadius="10" BackgroundColor="#FFEBEE" BorderColor="Transparent">
-                        <VerticalStackLayout>
-                            <Label Text="Despesas" FontSize="12" TextColor="#C62828" HorizontalOptions="Center"/>
-                            <Label x:Name="LblDespesas" Text="0.00 €" FontSize="16" FontAttributes="Bold" TextColor="#C62828" HorizontalOptions="Center"/>
-                        </VerticalStackLayout>
-                    </Frame>
-                </Grid>
-
-                <Label Text="Últimas Transações" FontSize="18" FontAttributes="Bold" Margin="0,10,0,0" />
-            </VerticalStackLayout>
-
-            <CollectionView x:Name="ListaTransacoes" Grid.Row="1" Margin="0,5">
-                <CollectionView.EmptyView>
-                    <Label Text="Ainda não existem movimentos." HorizontalOptions="Center" Margin="0,50"/>
-                </CollectionView.EmptyView>
-
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:Transacao">
-                        <Grid Padding="10" ColumnDefinitions="Auto, *, Auto">
-                            <Frame Grid.Column="0" CornerRadius="20" HeightRequest="40" WidthRequest="40" 
-                                   Padding="0" BackgroundColor="#F0F0F0" BorderColor="Transparent">
-                                <Label Text="💰" VerticalOptions="Center" HorizontalOptions="Center" />
-                            </Frame>
-
-                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Margin="10,0">
-                                <Label Text="{Binding NomeTransacao}" FontAttributes="Bold" FontSize="14" />
-                                <Label Text="{Binding DataTransacao, StringFormat='{0:dd/MM/yyyy HH:mm}'}" FontSize="12" TextColor="Gray" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
+                        <Frame Grid.Column="0" Padding="15" CornerRadius="12" BackgroundColor="#1E1E1E" BorderColor="#1B5E20">
+                            <VerticalStackLayout>
+                                <Label Text="Receitas do Mês" FontSize="12" TextColor="#81C784" HorizontalOptions="Center"/>
+                                <Label x:Name="LblReceitas" Text="0.00 €" FontSize="16" FontAttributes="Bold" TextColor="#4CAF50" HorizontalOptions="Center"/>
                             </VerticalStackLayout>
+                        </Frame>
 
-                            <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" HorizontalOptions="End">
-                                <Label Text="{Binding ValorTransacao, StringFormat='{0:C}'}" 
-                                       FontAttributes="Bold" 
-                                       TextColor="{Binding CorValor}"/>
-                                <Label Text="{Binding TipoMovimento}" FontSize="10" TextColor="Gray" HorizontalOptions="End"/>
+                        <Frame Grid.Column="1" Padding="15" CornerRadius="12" BackgroundColor="#1E1E1E" BorderColor="#B71C1C">
+                            <VerticalStackLayout>
+                                <Label Text="Despesas do Mês" FontSize="12" TextColor="#E57373" HorizontalOptions="Center"/>
+                                <Label x:Name="LblDespesas" Text="0.00 €" FontSize="16" FontAttributes="Bold" TextColor="#F44336" HorizontalOptions="Center"/>
                             </VerticalStackLayout>
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </Grid>
+                        </Frame>
+                    </Grid>
+
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Despesas por Categoria" TextColor="White" FontSize="18" FontAttributes="Bold" />
+                        <Frame BackgroundColor="#1E1E1E" BorderColor="#333" CornerRadius="15" Padding="15" HasShadow="True">
+                            <micro:ChartView x:Name="ChartDashboard" HeightRequest="200" BackgroundColor="Transparent"/>
+                        </Frame>
+                    </VerticalStackLayout>
+
+                    <Label Text="Últimas Transações" TextColor="White" FontSize="18" FontAttributes="Bold" Margin="0,10,0,5" />
+
+                </VerticalStackLayout>
+            </CollectionView.Header>
+
+            <CollectionView.EmptyView>
+                <Label Text="Ainda não existem movimentos." TextColor="Gray" HorizontalOptions="Center" Margin="0,30"/>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Transacao">
+                    <Grid Padding="5,10" ColumnDefinitions="Auto, *, Auto">
+                        <Frame Grid.Column="0" CornerRadius="20" HeightRequest="40" WidthRequest="40" 
+                               Padding="0" BackgroundColor="#2C2C2C" BorderColor="Transparent">
+                            <Label Text="💰" VerticalOptions="Center" HorizontalOptions="Center" />
+                        </Frame>
+
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Margin="15,0">
+                            <Label Text="{Binding NomeTransacao}" TextColor="White" FontAttributes="Bold" FontSize="14" />
+                            <Label Text="{Binding DataTransacao, StringFormat='{0:dd/MM/yyyy HH:mm}'}" FontSize="12" TextColor="#888" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" HorizontalOptions="End">
+                            <Label Text="{Binding ValorTransacao, StringFormat='{0:C}'}" 
+                                   FontAttributes="Bold" 
+                                   TextColor="{Binding CorValor}"/>
+                            <Label Text="{Binding TipoMovimento}" FontSize="10" TextColor="#888" HorizontalOptions="End"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
 
         <Button Text="+"
                 Clicked="AoClicarNovaTransacao"
                 BackgroundColor="#512BD4"
                 TextColor="White"
-                FontSize="24"
+                FontSize="28"
                 FontAttributes="Bold"
                 HeightRequest="60"
                 WidthRequest="60"
                 CornerRadius="30"
                 HorizontalOptions="End"
                 VerticalOptions="End"
-                Margin="25"
-                Shadow="{Shadow Brush=Black, Offset='0,5', Radius=10, Opacity=0.3}" />
+                Margin="20,20,20,30"
+                Shadow="{Shadow Brush=Black, Offset='0,5', Radius=10, Opacity=0.5}" />
+
     </Grid>
 </ContentPage>

@@ -4,7 +4,10 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using static Finance.API.DTOs.UserDTO;
+using static FinanceUI.Models.UserDTO;
+using static FinanceUI.Models.GraficosDTO;
+using static FinanceUI.Models.RelatoriosDTO;
+
 
 public class ApiService
 {
@@ -16,7 +19,7 @@ public class ApiService
         _httpClient = new HttpClient { BaseAddress = new Uri(BaseUrl) };
     }
 
-    // --- MÉTODO DE LOGIN (Já tínhamos falado) ---
+    // --- MÉTODO DE LOGIN ---
     public async Task<string> LoginAsync(string email, string password)
     {
         var response = await _httpClient.PostAsJsonAsync("Auth/login", new { Email = email, Password = password });
@@ -38,6 +41,7 @@ public class ApiService
         return null;
     }
 
+    // --- MÉTODO PARA REGISTRO DE UM NOVO CLIENTE ---
     public async Task<(bool Sucesso, string Mensagem)> RegistarAsync(RegistoRequestDTO dados)
     {
         try
@@ -62,6 +66,7 @@ public class ApiService
         }
     }
 
+    // --- MÉTODO PARA AS CONFIGURAÇÕES DE PERFIL PARA ATUALIZAÇÃO DE DADOS ---
     public async Task<(bool Sucesso, string Mensagem)> AtualizarPerfilAsync(string nome, string email, string telemovel, DateTime dataNasc)
     {
         try
@@ -80,7 +85,7 @@ public class ApiService
         catch (Exception ex) { return (false, ex.Message); }
     }
 
-    // Adiciona estes dois métodos à tua classe ApiService
+    // --- MÉTODO PARA AS CONFIGURAÇÕES DE PERFIL PARA MUDANÇA DE PASSWORD ---
     public async Task<(bool Sucesso, string Mensagem)> MudarPasswordAsync(string antiga, string nova)
     {
         try
@@ -109,6 +114,7 @@ public class ApiService
         }
     }
 
+    // --- MÉTODO PARA A RECUPERAÇÃO DA PASSWORD FORA DO PROGRAMA ---
     public async Task<(bool Sucesso, string Mensagem)> RecuperarPasswordAsync(string email, string telemovel, string novaPassword)
     {
         try
@@ -131,6 +137,8 @@ public class ApiService
             return (false, $"Erro: {ex.Message}");
         }
     }
+
+    // --- MÉTODO PARA CARREGAR OS DADOS DO DASHBOARD ---
     public async Task<DashboardResumo> GetResumoDashboardAsync()
     {
         try
@@ -157,7 +165,7 @@ public class ApiService
         }
     }
 
-    // 1. LISTAR CONTAS
+    // --- MÉTODO DE LISTAR AS CONTAS ---
     public async Task<List<ContaDTO>> GetContasAsync()
     {
         try
@@ -175,6 +183,14 @@ public class ApiService
         catch { return new List<ContaDTO>(); }
     }
 
+    // --- MÉTODO PARA LISTAR AS CATEGORIAS ---
+    public async Task<List<CategoriaDTO>> GetCategoriasAsync()
+    {
+        // Garante que o endereço corresponde ao teu Controller de Categorias no Backend
+        return await _httpClient.GetFromJsonAsync<List<CategoriaDTO>>("/api/Categorias");
+    }
+
+    // --- MÉTODO PARA PUXAR OS DADOS DO CLIENTE PARA AS CONFIGURAÇÕES DE PERFIL ---
     public async Task<UserUpdateDTO> ObterPerfilAsync()
     {
         try
@@ -196,7 +212,8 @@ public class ApiService
             return null;
         }
     }
-
+    
+    // --- MÉTODO PARA A GERAR O HISTÓRICO DE TRANSAÇÕES ---
     public async Task<List<TransacaoReadDTO>> ObterExtratoAsync(int idConta, DateTime? dataInicio = null, DateTime? dataFim = null)
     {
         var token = await SecureStorage.Default.GetAsync("auth_token");
@@ -229,7 +246,31 @@ public class ApiService
         }
     }
 
-    // CRIAR CONTA
+    // --- MÉTODOS PARA A GERAÇÃO DE GRÁFICOS ---
+
+    public async Task<List<GastoCategoriaDTO>> GetGastosPorCategoriaAsync(int mes, int ano)
+    {
+        return await _httpClient.GetFromJsonAsync<List<GastoCategoriaDTO>>($"/api/Graficos/despesas-categoria?mes={mes}&ano={ano}");
+    }
+
+    public async Task<List<FluxoCaixaDTO>> GetFluxoCaixaAsync(int ano)
+    {
+        return await _httpClient.GetFromJsonAsync<List<FluxoCaixaDTO>>($"/api/Graficos/fluxo-caixa?ano={ano}");
+    }
+
+    // --- MÉTODO PARA A GERAÇÃO DE RELATÓRIOS --- 
+    public async Task<List<RelatorioTransacaoDTO>> GetExtratoDetalhadoAsync(int mes, int ano, int? idConta, int? idCategoria, string busca)
+    {
+        var url = $"/api/Relatorios/extrato-detalhado?mes={mes}&ano={ano}";
+
+        if (idConta.HasValue && idConta > 0) url += $"&idConta={idConta}";
+        if (idCategoria.HasValue && idCategoria > 0) url += $"&idCategoria={idCategoria}";
+        if (!string.IsNullOrEmpty(busca)) url += $"&busca={Uri.EscapeDataString(busca)}";
+
+        return await _httpClient.GetFromJsonAsync<List<RelatorioTransacaoDTO>>(url);
+    }
+
+    // --- MÉTODO PARA CRIAR UMA CONTA FINANCEIRA ---
     public async Task<(bool Sucesso, string Mensagem)> CriarContaAsync(string nomeConta, decimal montanteInicial)
     {
         try
@@ -247,7 +288,7 @@ public class ApiService
         catch (Exception ex) { return (false, ex.Message); }
     }
 
-    // 3. FECHAR CONTA
+    // MÉTODO PARA FECHAR UMA CONTA FINANCEIRA (SOFT DELETE) ---
     public async Task<(bool Sucesso, string Mensagem)> FecharContaAsync(int idConta)
     {
         try
@@ -265,6 +306,7 @@ public class ApiService
         catch (Exception ex) { return (false, ex.Message); }
     }
 
+    // MÉTODO PARA REGISTRO DE UMA TRANSAÇÃO NUMA CONTA FINANCEIRA (QUER SEJA RECEITA, DESPESA OU TRANSFERÊNCIA ENTRE CONTAS) ---
     public async Task<bool> PostTransacaoAsync(TransacaoRequestDTO transacao)
     {
         try

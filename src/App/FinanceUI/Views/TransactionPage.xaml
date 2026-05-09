@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FinanceUI.Views.TransactionPage"
-             Title="Nova Transação">
+             Title="Nova Transação"
+             BackgroundColor="#121212">
 
     <ScrollView>
         <VerticalStackLayout Spacing="20" Padding="30">
@@ -30,7 +31,7 @@
                     <Frame BorderColor="LightGray" Padding="0" CornerRadius="10" HasShadow="False">
                         <Picker x:Name="ContaPicker" 
                                 Title="Escolha..." 
-                                ItemDisplayBinding="{Binding Nome}"
+                                ItemDisplayBinding="{Binding NomeConta}"
                                 HeightRequest="85"
                                 VerticalOptions="Center" />
                     </Frame>
@@ -38,7 +39,7 @@
                     <VerticalStackLayout x:Name="LayoutContaDestino" Spacing="5" IsVisible="False">
                         <Label Text="Conta Destino *" FontAttributes="Bold" />
                         <Frame BorderColor="LightGray" Padding="0" CornerRadius="10" HasShadow="False">
-                            <Picker x:Name="ContaDestinoPicker" ItemDisplayBinding="{Binding Nome}" Title="Selecione o destino" Margin="10,0" />
+                            <Picker x:Name="ContaDestinoPicker" ItemDisplayBinding="{Binding NomeConta}" Title="Selecione o destino" Margin="10,0" />
                         </Frame>
                     </VerticalStackLayout>
                 </VerticalStackLayout>

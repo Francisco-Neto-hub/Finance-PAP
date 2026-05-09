@@ -1,4 +1,4 @@
-﻿namespace Finance.API.DTOs
+﻿namespace FinanceUI.Models
 {
     public class UserDTO
     {
