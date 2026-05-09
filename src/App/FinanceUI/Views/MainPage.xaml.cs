@@ -1,6 +1,8 @@
 ﻿using FinanceUI;
 using FinanceUI.Models;
 using FinanceUI.Views;
+using Microcharts;
+using SkiaSharp;
 
 namespace FinanceUI
 {
@@ -45,6 +47,8 @@ namespace FinanceUI
         {
             base.OnAppearing();
             var resumo = await _apiService.GetResumoDashboardAsync();
+            
+            ConfigurarGraficoDashboard(resumo.GastosPorCategoria);
 
             if (resumo != null)
             {
@@ -69,6 +73,38 @@ namespace FinanceUI
             {
                 ListaContas.ItemsSource = resumo.Contas;
             }
+        }
+        private void ConfigurarGraficoDashboard(List<GastoCategoriaResumoDTO> dados)
+        {
+            // Se não houver despesas este mês, mostra um gráfico vazio de forma segura
+            if (dados == null || dados.Count == 0)
+            {
+                ChartDashboard.Chart = new DonutChart
+                {
+                    Entries = new ChartEntry[0],
+                    BackgroundColor = SKColors.Transparent
+                };
+                return;
+            }
+
+            // Uma paleta de cores para as categorias não ficarem todas da mesma cor
+            string[] paletaCores = { "#512BD4", "#AC94F4", "#C62828", "#FF9800", "#00BCD4", "#4CAF50" };
+
+            var entradas = dados.Select((d, index) => new ChartEntry((float)d.TotalGasto)
+            {
+                Label = d.Categoria,
+                ValueLabel = d.TotalGasto.ToString("N2") + " €",
+                // Usa o index para escolher uma cor diferente da paleta
+                Color = SKColor.Parse(paletaCores[index % paletaCores.Length])
+            }).ToArray();
+
+            ChartDashboard.Chart = new DonutChart
+            {
+                Entries = entradas,
+                LabelTextSize = 24,
+                HoleRadius = 0.5f,
+                BackgroundColor = SKColors.Transparent
+            };
         }
     }
 }

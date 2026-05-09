@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:micro="clr-namespace:Microcharts.Maui;assembly=Microcharts.Maui"
+             x:Class="FinanceUI.Views.GraficosPage"
+             Title="Análise Gráfica"
+             BackgroundColor="#121212">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <Label Text="Filtros de Pesquisa" FontSize="18" FontAttributes="Bold" TextColor="White" />
+
+            <Frame BackgroundColor="#1E1E1E" BorderColor="#333" CornerRadius="12" Padding="15">
+                <VerticalStackLayout Spacing="15">
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+                        <VerticalStackLayout Grid.Column="0" Spacing="5">
+                            <Label Text="Mês" FontSize="12" TextColor="#A0A0A0" />
+                            <Picker x:Name="PickerMes" TextColor="White" BackgroundColor="#2C2C2C" Title="Selecione o mês" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="1" Spacing="5">
+                            <Label Text="Ano" FontSize="12" TextColor="#A0A0A0" />
+                            <Picker x:Name="PickerAno" TextColor="White" BackgroundColor="#2C2C2C" Title="Selecione o ano" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Button Text="Gerar Gráficos" 
+                            Clicked="AoClicarGerar" 
+                            BackgroundColor="#512BD4" 
+                            TextColor="White" 
+                            CornerRadius="8" 
+                            FontAttributes="Bold" 
+                            HeightRequest="45" />
+
+                    <ActivityIndicator x:Name="LoadingSpinner" IsRunning="False" IsVisible="False" Color="#AC94F4" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="Despesas por Categoria (Mês)" FontSize="18" FontAttributes="Bold" TextColor="White" />
+            <Frame BackgroundColor="#1E1E1E" BorderColor="#333" CornerRadius="15" Padding="15" HasShadow="True">
+                <micro:ChartView x:Name="ChartDonut" HeightRequest="250" BackgroundColor="Transparent"/>
+            </Frame>
+
+            <Label Text="Evolução de Despesas (Ano)" FontSize="18" FontAttributes="Bold" TextColor="White" />
+            <Frame BackgroundColor="#1E1E1E" BorderColor="#333" CornerRadius="15" Padding="15" HasShadow="True">
+                <micro:ChartView x:Name="ChartBarras" HeightRequest="250" BackgroundColor="Transparent"/>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
