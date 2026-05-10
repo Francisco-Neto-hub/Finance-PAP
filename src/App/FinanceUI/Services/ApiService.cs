@@ -248,14 +248,20 @@ public class ApiService
 
     // --- MÉTODOS PARA A GERAÇÃO DE GRÁFICOS ---
 
-    public async Task<List<GastoCategoriaDTO>> GetGastosPorCategoriaAsync(int mes, int ano)
+    public async Task<List<GastoCategoriaDTO>> GetGastosPorCategoriaAsync(int mes, int ano, int? idConta)
     {
-        return await _httpClient.GetFromJsonAsync<List<GastoCategoriaDTO>>($"/api/Graficos/despesas-categoria?mes={mes}&ano={ano}");
+        var url = $"/api/Graficos/despesas-categoria?mes={mes}&ano={ano}";
+        if (idConta.HasValue && idConta > 0) url += $"&idConta={idConta}";
+
+        return await _httpClient.GetFromJsonAsync<List<GastoCategoriaDTO>>(url);
     }
 
-    public async Task<List<FluxoCaixaDTO>> GetFluxoCaixaAsync(int ano)
+    public async Task<List<FluxoCaixaDTO>> GetFluxoCaixaAsync(int ano, int? idConta)
     {
-        return await _httpClient.GetFromJsonAsync<List<FluxoCaixaDTO>>($"/api/Graficos/fluxo-caixa?ano={ano}");
+        var url = $"/api/Graficos/fluxo-caixa?ano={ano}";
+        if (idConta.HasValue && idConta > 0) url += $"&idConta={idConta}";
+
+        return await _httpClient.GetFromJsonAsync<List<FluxoCaixaDTO>>(url);
     }
 
     // --- MÉTODO PARA A GERAÇÃO DE RELATÓRIOS --- 
