@@ -15,6 +15,7 @@ public partial class GraficosPage : ContentPage
         InitializeComponent();
         _apiService = apiService;
         ConfigurarFiltros();
+        CarregarContas();
     }
 
     private void ConfigurarFiltros()
@@ -33,6 +34,24 @@ public partial class GraficosPage : ContentPage
         PickerAno.SelectedItem = DateTime.Now.Year;
     }
 
+    private async void CarregarContas()
+    {
+        try
+        {
+            var contas = await _apiService.GetContasAsync();
+            if (contas != null)
+            {
+                var todas = new ContaDTO { Id = 0, NomeConta = "📊 Todas as Contas" };
+                contas.Insert(0, todas);
+                PickerConta.ItemsSource = contas;
+                PickerConta.SelectedIndex = 0;
+            }
+        }
+        catch (Exception)
+        {
+            await DisplayAlertAsync("Erro", "Não foi possível carregar as contas.", "OK");
+        }
+    }
     private async void AoClicarGerar(object sender, EventArgs e)
     {
         if (PickerMes.SelectedIndex == -1 || PickerAno.SelectedItem == null)
@@ -46,16 +65,20 @@ public partial class GraficosPage : ContentPage
             LoadingSpinner.IsVisible = true;
             LoadingSpinner.IsRunning = true;
 
+            var contaSelecionada = (ContaDTO)PickerConta.SelectedItem;
+            int? idConta = contaSelecionada?.Id > 0 ? contaSelecionada.Id : null;
+
             int mes = PickerMes.SelectedIndex + 1;
             int ano = (int)PickerAno.SelectedItem;
 
             // Busca os dados aos novos endpoints separados
-            var dadosCategoria = await _apiService.GetGastosPorCategoriaAsync(mes, ano);
-            var dadosFluxo = await _apiService.GetFluxoCaixaAsync(ano);
-
+            // Atualiza a chamada para passar o idConta
+            var dadosDespesas = await _apiService.GetGastosPorCategoriaAsync(mes, ano, idConta);
+            var dadosFluxo = await _apiService.GetFluxoCaixaAsync(ano, idConta);
+          
             // Processa e desenha os gráficos
-            ConfigurarGraficoDonut(dadosCategoria);
-            ConfigurarGraficoBarras(dadosFluxo);
+            ConfigurarGraficoDonut(dadosDespesas);
+            DesenharGraficoFluxo(dadosFluxo);
         }
         catch (Exception ex)
         {
@@ -91,29 +114,54 @@ public partial class GraficosPage : ContentPage
             BackgroundColor = SKColors.Transparent
         };
     }
-
-    private void ConfigurarGraficoBarras(List<FluxoCaixaDTO> dados)
+    private void DesenharGraficoFluxo(List<FluxoCaixaDTO> dados)
     {
-        if (dados == null || !dados.Any())
+        if (dados == null || dados.Count == 0) return;
+
+        var entries = new List<ChartEntry>();
+
+        foreach (var item in dados)
         {
-            ChartBarras.Chart = new BarChart { Entries = new ChartEntry[0], BackgroundColor = SKColors.Transparent };
-            return;
+            // Barra de Receitas
+            entries.Add(new ChartEntry((float)item.TotalReceitas)
+            {
+                Label = GetNomeMes(item.Mes),
+                ValueLabel = item.TotalReceitas.ToString("C"),
+                Color = SKColor.Parse("#2ecc71")
+            });
+
+            // Barra de Despesas
+            entries.Add(new ChartEntry((float)item.TotalDespesas)
+            {
+                ValueLabel = item.TotalDespesas.ToString("C"),
+                Color = SKColor.Parse("#e74c3c")
+            });
         }
 
-        // Vamos mapear as DESPESAS ao longo do ano
-        var entradas = dados.Select(d => new ChartEntry((float)d.TotalDespesas)
+        // O SEGREDO ESTÁ AQUI: Forçar o MAUI a desenhar no ecrã principal!
+        MainThread.BeginInvokeOnMainThread(() =>
         {
-            Label = d.NomeMes,
-            ValueLabel = d.TotalDespesas > 0 ? d.TotalDespesas.ToString("N0") : "", // Esconde o label se for 0
-            Color = SKColor.Parse("#C62828") // Vermelho para despesas
-        }).ToArray();
+            ChartBarras.Chart = new BarChart
+            {
+                Entries = entries,
 
-        ChartBarras.Chart = new BarChart
-        {
-            Entries = entradas,
-            LabelTextSize = 20,
-            BackgroundColor = SKColors.Transparent,
-            ValueLabelOrientation = Orientation.Horizontal
-        };
+                // 1. Reduzir o tamanho da letra (12 a 14 é o ideal para telemóveis)
+                LabelTextSize = 18,
+
+                // 2. Forçar as etiquetas a ficarem na horizontal
+                LabelOrientation = Orientation.Horizontal,
+                ValueLabelOrientation = Orientation.Horizontal,
+
+                BackgroundColor = SKColors.Transparent,
+                Margin = 20
+            };
+        });
+    }
+
+    // Função auxiliar para converter número do mês em nome
+    private string GetNomeMes(int mes)
+    {
+        string[] meses = { "", "Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez" };
+        return meses[mes];
     }
 }

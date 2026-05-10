@@ -39,7 +39,7 @@ public partial class RelatoriosPage : ContentPage
                 PickerConta.SelectedIndex = 0;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             await DisplayAlertAsync("Erro", "Não foi possível carregar as contas.", "OK");
         }
