@@ -96,6 +96,22 @@ CREATE TABLE Auditoria_Saldo (
     DataAlteracao DATETIME DEFAULT GETDATE(),
     Usuario VARCHAR(50) -- Pode ser o e-mail do admin que fez a alteração
 );
+
+CREATE TABLE Suporte_Ticket (
+    idTicket INT PRIMARY KEY IDENTITY(1,1),
+    idCliente INT NOT NULL,
+    Assunto NVARCHAR(150) NOT NULL,
+    Mensagem NVARCHAR(MAX) NOT NULL,
+    DataCriacao DATETIME DEFAULT GETDATE(),
+    IsResolvido BIT DEFAULT 0,
+    
+    -- Chave estrangeira para garantir que o ticket pertence a um cliente real
+    CONSTRAINT FK_Ticket_Cliente FOREIGN KEY (idCliente) 
+    REFERENCES Cliente(idCliente)
+);
+
+-- Índice para acelerar a listagem de tickets por cliente e por estado
+CREATE INDEX IX_Suporte_Status ON Suporte_Ticket (IsResolvido, DataCriacao);
 GO
 
 -- ==========================================================

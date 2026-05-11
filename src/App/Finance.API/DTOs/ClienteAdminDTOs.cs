@@ -15,6 +15,8 @@
         public string Nome { get; set; }
         public string Email { get; set; }
         public string Telemovel { get; set; }
+        public DateTime DataNasc { get; set; }
+        public string Password { get; set; }
         public int IdPerfil { get; set; }
     }
 
