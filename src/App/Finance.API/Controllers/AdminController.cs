@@ -1,8 +1,9 @@
-﻿using Finance.API.Data;
+﻿using Dapper;
+using Finance.API.Data;
 using Finance.API.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Dapper;
+using static Finance.API.DTOs.AdminDTO;
 
 namespace Finance.API.Controllers
 {
@@ -15,6 +16,56 @@ namespace Finance.API.Controllers
         private readonly FinanceContext _context;
         public AdminController(FinanceContext context) { _context = context; }
 
+        #region DASHBOARD E ESTATÍSTICAS
+
+        [HttpGet("dashboard-stats")]
+        public async Task<IActionResult> GetDashboardStats()
+        {
+            using var connection = _context.CreateConnection();
+            var query = @"
+        SELECT 
+            (SELECT COUNT(*) FROM Cliente WHERE IsExcluido = 0) AS TotalClientes,
+            (SELECT COUNT(*) FROM Cliente WHERE IsAtivo = 1 AND IsExcluido = 0) AS ClientesAtivos,
+            (SELECT ISNULL(SUM(ValorTransacao), 0) FROM Transacao 
+             WHERE MONTH(DataTransacao) = MONTH(GETDATE()) AND YEAR(DataTransacao) = YEAR(GETDATE()) AND IsConcluida = 1) AS VolumeTransacoesMes,
+            (SELECT ISNULL(SUM(Montante), 0) FROM Conta WHERE IsAberta = 1) AS CapitalTotalCustodia";
+
+            var stats = await connection.QueryFirstAsync<DashboardStatsDTO>(query);
+            return Ok(stats);
+        }
+
+        #endregion
+
+        #region GESTÃO DE SUPORTE
+
+        [HttpGet("tickets-pendentes")]
+        public async Task<IActionResult> ListarTicketsPendentes()
+        {
+            using var connection = _context.CreateConnection();
+            var query = @"
+        SELECT S.idTicket, C.Nome AS NomeCliente, S.Assunto, S.Mensagem, S.DataCriacao, S.IsResolvido
+        FROM Suporte_Ticket S
+        INNER JOIN Cliente C ON S.idCliente = C.idCliente
+        WHERE S.IsResolvido = 0
+        ORDER BY S.DataCriacao ASC";
+
+            var tickets = await connection.QueryAsync<TicketSuporteDTO>(query);
+            return Ok(tickets);
+        }
+
+        [HttpPut("tickets/{idTicket}/resolver")]
+        public async Task<IActionResult> ResolverTicket(int idTicket)
+        {
+            using var connection = _context.CreateConnection();
+            var linhas = await connection.ExecuteAsync(
+                "UPDATE Suporte_Ticket SET IsResolvido = 1 WHERE idTicket = @Id", new { Id = idTicket });
+
+            if (linhas == 0) return NotFound();
+            return Ok(new { mensagem = "Ticket marcado como resolvido." });
+        }
+
+        #endregion
+
         #region GESTÃO DE CLIENTES
 
         /// <summary>
@@ -22,14 +73,59 @@ namespace Finance.API.Controllers
         /// </summary>
         /// <returns>Lista global de clientes com os respetivos estados de conta e perfis.</returns>
         [HttpGet("listar_clientes")]
-        public async Task<IActionResult> ListarClientesGlobais()
+        public async Task<IActionResult> ListarClientesGlobais([FromQuery] string search = "")
         {
             using var connection = _context.CreateConnection();
             var query = @"
-                SELECT idCliente, nome, email, telemovel, DataNasc, idPerfil, IsAtivo, IsExcluido 
-                FROM Cliente ORDER BY nome";
-            var clientes = await connection.QueryAsync<ClienteAdminReadDTO>(query);
+        SELECT idCliente, nome, email, telemovel, DataNasc, idPerfil, IsAtivo, IsExcluido 
+        FROM Cliente 
+        WHERE (nome LIKE @Search OR email LIKE @Search)
+        ORDER BY nome";
+
+            var clientes = await connection.QueryAsync<ClienteAdminReadDTO>(query, new { Search = $"%{search}%" });
             return Ok(clientes);
+        }
+
+        [HttpPut("clientes/{idCliente}/atualizar_dados")]
+        public async Task<IActionResult> AtualizarCliente(int idCliente, [FromBody] ClienteAdminUpdateDTO request)
+        {
+            using var connection = _context.CreateConnection();
+
+            // 1. Verificar se o email já existe noutro utilizador para evitar duplicados
+            var emailExiste = await connection.ExecuteScalarAsync<int>(
+                "SELECT COUNT(1) FROM Cliente WHERE Email = @Email AND idCliente <> @Id",
+                new { Email = request.Email, Id = idCliente });
+
+            if (emailExiste > 0) return BadRequest(new { mensagem = "Este email já está a ser usado por outro utilizador." });
+
+            // 2. Construir a query dinamicamente (se houver password, atualizamos, se não, mantemos)
+            string query = @"
+                            UPDATE Cliente 
+                            SET Nome = @Nome, 
+                                Email = @Email, 
+                                Telemovel = @Telemovel, 
+                                DataNasc = @DataNasc 
+                            WHERE idCliente = @IdCliente";
+
+            var parametros = new
+            {
+                Nome = request.Nome,
+                Email = request.Email,
+                Telemovel = request.Telemovel,
+                DataNasc = request.DataNasc,
+                IdCliente = idCliente
+            };
+
+            await connection.ExecuteAsync(query, parametros);
+
+            // 3. Lógica específica para a Password (usando a tua implementação SHA2_256)
+            if (!string.IsNullOrEmpty(request.Password))
+            {
+                var passwordQuery = "UPDATE Cliente SET PasswordHash = CONVERT(VARCHAR(250), HASHBYTES('SHA2_256', @Nova), 2) WHERE idCliente = @Id";
+                await connection.ExecuteAsync(passwordQuery, new { Nova = request.Password, Id = idCliente });
+            }          
+
+            return Ok(new { mensagem = "Dados do cliente atualizados com sucesso!" });
         }
 
         /// <summary>
@@ -66,14 +162,32 @@ namespace Finance.API.Controllers
         [HttpPut("clientes/{idCliente}/estado")]
         public async Task<IActionResult> BloquearDesbloquearCliente(int idCliente, [FromBody] AlterarEstadoDTO request)
         {
-            using var connection = _context.CreateConnection();
-            // IsAtivo = 0 impede o cliente de fazer Login
-            var linhas = await connection.ExecuteAsync("UPDATE Cliente SET IsAtivo = @Estado WHERE idCliente = @IdCliente",
-                new { Estado = request.NovoEstado, IdCliente = idCliente });
+            // 1. Obter o ID do Administrador que está a fazer a ação (através do Token JWT)
+            var adminIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-            if (linhas == 0) return NotFound("Cliente não encontrado.");
-            string accao = request.NovoEstado ? "desbloqueado" : "bloqueado";
-            return Ok(new { mensagem = $"O acesso do cliente foi {accao} com sucesso." });
+            if (adminIdClaim != null && int.Parse(adminIdClaim) == idCliente)
+            {
+                return BadRequest(new { mensagem = "Protocolo de Segurança: Não podes bloquear a tua própria conta de administrador!" });
+            }
+
+            using var connection = _context.CreateConnection();
+
+            // 2. Executar a atualização
+            var query = "UPDATE Cliente SET IsAtivo = @Estado WHERE idCliente = @IdCliente AND IsExcluido = 0";
+            var linhas = await connection.ExecuteAsync(query, new { Estado = request.NovoEstado, IdCliente = idCliente });
+
+            if (linhas == 0)
+                return NotFound(new { mensagem = "Cliente não encontrado ou já removido do sistema." });
+
+            // 3. Resposta detalhada
+            string accao = request.NovoEstado ? "REATIVADO" : "BLOQUEADO";
+
+            return Ok(new
+            {
+                mensagem = $"Acesso {accao} com sucesso.",
+                idCliente = idCliente,
+                novoEstado = request.NovoEstado
+            });
         }
 
         #endregion
@@ -251,7 +365,6 @@ namespace Finance.API.Controllers
                 return StatusCode(500, new { erro = ex.Message });
             }
         }
-
         #endregion
     }
 }

@@ -18,4 +18,9 @@ VALUES (
     1, 
     CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', '12345'), 2)
 );
+
+INSERT INTO Suporte_Ticket (idCliente, Assunto, Mensagem, IsResolvido)
+VALUES 
+(1, 'Dúvida no Saldo', 'O meu saldo não atualizou após a última transferência.', 0),
+(1, 'Erro ao Gerar PDF', 'A aplicação fecha quando tento exportar o relatório de Maio.', 0);
 GO

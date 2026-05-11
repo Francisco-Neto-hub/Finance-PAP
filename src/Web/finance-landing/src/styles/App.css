@@ -459,6 +459,56 @@ html, body {
     animation: spin 1s linear infinite;
 }
 
+/* --- PÁGINA DE LOGIN (CONTROLO DE ACESSO) --- */
+.login-page {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
+}
+
+.login-card {
+    background: var(--finance-nav);
+    padding: 3rem;
+    border-radius: 16px;
+    border: 1px solid #333;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.login-logo { margin-bottom: 1rem; filter: drop-shadow(0 0 10px rgba(0, 194, 255, 0.3)); }
+.login-subtitle { color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem; }
+
+.input-group { text-align: left; margin-bottom: 1.5rem; }
+.input-group label { display: block; margin-bottom: 8px; color: #aaa; font-size: 0.8rem; text-transform: uppercase; }
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    background: #0b0b0b;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: white;
+    outline: none;
+    transition: 0.3s;
+}
+.input-group input:focus { border-color: var(--finance-blue); box-shadow: 0 0 10px rgba(0, 194, 255, 0.1); }
+
+.login-error {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error-red);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+}
+
 /* =========================================
    7. MEDIA QUERIES (MOBILE)
    ========================================= */
