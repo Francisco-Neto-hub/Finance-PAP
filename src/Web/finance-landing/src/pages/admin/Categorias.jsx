@@ -10,7 +10,7 @@ const Categorias = () => {
     try {
       const token = localStorage.getItem('token');
       // Assume que tens um GET /api/Admin/categorias ou GET /api/Categorias
-      const res = await axios.get('https://localhost:7221/api/Admin/categorias', {
+      const res = await axios.get('https://localhost:7221/api/Categorias', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCategorias(res.data);

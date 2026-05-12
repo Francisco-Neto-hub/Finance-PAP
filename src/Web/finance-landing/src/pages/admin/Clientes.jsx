@@ -15,7 +15,7 @@ const Clientes = () => {
     telemovel: '',
     dataNasc: '',
     idPerfil: 2,
-    password: '' // Campo opcional para reset
+    password: '' 
   });
 
   // 1. Carregar a lista inicial
@@ -37,10 +37,33 @@ const Clientes = () => {
     carregarClientes();
   }, []);
 
-  // 2. Lógica para Abrir Modal de Edição
+  // --- 2. NOVA LOGICA: BLOQUEAR / ATIVAR ---
+  const alternarEstadoCliente = async (id, estadoAtual) => {
+    const acao = estadoAtual ? "bloquear" : "ativar";
+    if (!window.confirm(`Tens a certeza que desejas ${acao} este acesso?`)) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      // Chamada ao teu endpoint [HttpPut("clientes/{idCliente}/estado")]
+      await axios.put(`https://localhost:7221/api/Admin/clientes/${id}/estado`, 
+        { novoEstado: !estadoAtual }, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Atualização "Optimistic UI" (atualiza logo na lista sem recarregar tudo)
+      setClientes(clientes.map(c => 
+        c.idCliente === id ? { ...c, isAtivo: !estadoAtual } : c
+      ));
+
+      alert(`Utilizador ${estadoAtual ? 'bloqueado' : 'ativado'} com sucesso.`);
+    } catch (err) {
+      alert("Erro ao alterar o estado de acesso do cliente.");
+    }
+  };
+
+  // 3. Lógica para Abrir Modal de Edição
   const handleEditClick = (cliente) => {
     setSelectedCliente(cliente);
-    // Formatar a data para o formato YYYY-MM-DD que o <input type="date"> exige
     const dataFormatada = cliente.dataNasc ? cliente.dataNasc.split('T')[0] : '';
     setEditData({
       nome: cliente.nome,
@@ -48,43 +71,42 @@ const Clientes = () => {
       telemovel: cliente.telemovel || '',
       idPerfil: cliente.idPerfil,
       dataNasc: dataFormatada,
-      password: '' // Começa vazio por segurança
+      password: '' 
     });
     setIsModalOpen(true);
   };
 
-  // 3. Lógica para Guardar Alterações
+  // 4. Lógica para Guardar Alterações
   const handleSave = async (e) => {
-  e.preventDefault();
-  try {
-    const token = localStorage.getItem('token');
-    const id = selectedCliente.idCliente;
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      const id = selectedCliente.idCliente;
 
-    // CHAMADA 1: Dados Gerais (Nome, Email, Telemovel, Data, Password)
-    await axios.put(`https://localhost:7221/api/Admin/clientes/${id}/atualizar_dados`, editData, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+      // CHAMADA 1: Dados Gerais
+      await axios.put(`https://localhost:7221/api/Admin/clientes/${id}/atualizar_dados`, editData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-    // CHAMADA 2: Perfil (Promover/Despromover)
-    // Nota: Enviamos apenas o número (int) no body como o teu C# espera
-    await axios.put(`https://localhost:7221/api/Admin/clientes/${id}/perfil`, 
-      editData.idPerfil, // O body é apenas o inteiro
-      { 
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json' 
-        } 
-      }
-    );
+      // CHAMADA 2: Perfil
+      await axios.put(`https://localhost:7221/api/Admin/clientes/${id}/perfil`, 
+        editData.idPerfil, 
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
 
-    setIsModalOpen(false);
-    carregarClientes(); // Atualiza a tabela
-    alert("Protocolo e nível de acesso atualizados!");
-  } catch (err) {
-    const msg = err.response?.data?.mensagem || "Erro na operação";
-    alert(msg);
-  }
-};
+      setIsModalOpen(false);
+      carregarClientes(); 
+      alert("Protocolo e nível de acesso atualizados!");
+    } catch (err) {
+      const msg = err.response?.data?.mensagem || "Erro na operação";
+      alert(msg);
+    }
+  };
 
   if (loading) return (
     <div className="loading-state">
@@ -127,7 +149,6 @@ const Clientes = () => {
                 </td>
                 <td>
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    {/* BOTÃO EDITAR */}
                     <button 
                       className="btn-action btn-edit" 
                       onClick={() => handleEditClick(c)}
@@ -136,7 +157,6 @@ const Clientes = () => {
                       <Edit size={16} />
                     </button>
                     
-                    {/* BOTÃO BLOQUEAR */}
                     <button 
                       className={`btn-action ${c.isAtivo ? 'btn-block' : 'btn-activate'}`}
                       onClick={() => alternarEstadoCliente(c.idCliente, c.isAtivo)}
@@ -153,7 +173,7 @@ const Clientes = () => {
         </table>
       </div>
 
-      {/* --- MODAL DE EDIÇÃO (OVERLAY) --- */}
+      {/* --- MODAL DE EDIÇÃO --- */}
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content admin-edit-modal">
@@ -209,14 +229,9 @@ const Clientes = () => {
                 onChange={(e) => setEditData({...editData, idPerfil: parseInt(e.target.value)})}
                 className="admin-select"
               >
-              <option value={2}>Cliente Normal (Acesso App)</option>
-              <option value={1}>Administrador (Acesso Total)</option>
+                <option value={2}>Cliente Normal (Acesso App)</option>
+                <option value={1}>Administrador (Acesso Total)</option>
               </select>
-              {editData.idPerfil === 1 && (
-              <small style={{ color: '#ff4d4d', display: 'block', marginTop: '5px' }}>
-              ⚠️ Este utilizador terá acesso ao Painel de Controlo.
-              </small>
-              )}
               </div>
 
               <div className="password-reset-box">
@@ -227,7 +242,6 @@ const Clientes = () => {
                   value={editData.password} 
                   onChange={(e) => setEditData({...editData, password: e.target.value})} 
                 />
-                <small>A password será encriptada automaticamente ao gravar.</small>
               </div>
 
               <div className="modal-actions">

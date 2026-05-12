@@ -7,11 +7,9 @@ import PrivateRoute from './components/PrivateRoute';
 import AdminLayout from './pages/admin/AdminLayout';
 import Clientes from './pages/admin/Clientes'
 import Tickets from './pages/admin/Tickets';
-import Auditoria from './pages/admin/Auditoria';
 import Categorias from './pages/admin/Categorias';
 import Contas from './pages/admin/Contas';
-import Transacoes from './pages/admin/Transacoes';
-
+import AuditoriaTransacoes from './pages/admin/AuditoriaTransacoes';
 
 function App() {
   return (
@@ -25,10 +23,9 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="clientes" element={<Clientes />} />
           <Route path="contas" element={<Contas />} />
-          <Route path="transacoes" element={<Transacoes />} />
           <Route path="categorias" element={<Categorias />} />
           <Route path="tickets" element={<Tickets />} />
-          <Route path="auditoria" element={<Auditoria />} />
+          <Route path="auditoria" element={<AuditoriaTransacoes />} />
         </Route>
       </Routes>
     </Router>

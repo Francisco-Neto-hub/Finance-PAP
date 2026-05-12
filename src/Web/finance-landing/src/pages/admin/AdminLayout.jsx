@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, MessageSquare, LogOut, Landmark, ArrowRightLeft, Tags } from 'lucide-react';
+import { LayoutDashboard, Users, Landmark, ShieldAlert, Tags, MessageSquare, LogOut } from 'lucide-react';
 import '../../styles/Admin.css';
 
 const AdminLayout = () => {
@@ -33,8 +33,8 @@ const AdminLayout = () => {
             <Landmark size={20} /> Contas Bancárias
           </NavLink>
 
-          <NavLink to="/admin/transacoes" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            <ArrowRightLeft size={20} /> Auditoria Transações
+          <NavLink to="/admin/auditoria" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+            <ShieldAlert size={20} /> Auditoria Global
           </NavLink>
 
           <NavLink to="/admin/categorias" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
