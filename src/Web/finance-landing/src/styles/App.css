@@ -434,6 +434,23 @@ html, body {
     border-top: 1px solid #333;
 }
 
+.admin-access-link {
+    display: inline-block;
+    margin-top: 15px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.4;
+    transition: var(--transition);
+}
+
+.admin-access-link:hover {
+    color: var(--finance-blue);
+    opacity: 1;
+}
+
    /* =========================================
    6. ANIMAÇÕES & UTILITÁRIOS
    ========================================= */

@@ -91,6 +91,13 @@ const Login = () => {
           <button type="submit" className="btn-download" disabled={loading} style={{ width: '100%' }}>
             {loading ? <Loader2 className="spin-animation" /> : "Entrar no Sistema"}
           </button>
+
+          <button 
+          onClick={() => navigate('/')} 
+          style={{ background: 'none', border: 'none', color: '#555', marginTop: '20px', cursor: 'pointer' }}
+        >
+          ← Voltar para o site
+        </button>
         </form>
       </div>
     </div>
