@@ -2,54 +2,168 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FinanceUI.Views.RegisterPage"
-             Title="Criar Conta"
-             BackgroundColor="#0F1115">
+             BackgroundColor="#0F1115"
+             Shell.FlyoutBehavior="Disabled"
+             Shell.NavBarIsVisible="False">
 
-    <ScrollView>
-        <VerticalStackLayout Spacing="15" Padding="30" VerticalOptions="Center">
+    <ContentPage.Resources>
+        <Style x:Key="RegisterInputBorder" TargetType="Border">
+            <Setter Property="Stroke" Value="#2C2C2E" />
+            <Setter Property="Background" Value="#111318" />
+            <Setter Property="Padding" Value="15,0" />
+            <Setter Property="HeightRequest" Value="55" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        </Style>
 
-            <Label Text="Nova Conta" 
-                   FontSize="28" 
-                   HorizontalOptions="Center" 
-                   FontAttributes="Bold" 
-                   Margin="0,0,0,10"/>
+        <Style x:Key="EyeButtonStyle" TargetType="ImageButton">
+            <Setter Property="HeightRequest" Value="24" />
+            <Setter Property="WidthRequest" Value="24" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="Margin" Value="0,0,5,0" />
+        </Style>
+    </ContentPage.Resources>
 
-            <Entry x:Name="NomeEntry" 
-                   Placeholder="Nome Completo" />
+    <Grid VerticalOptions="FillAndExpand">
+        <ScrollView>
+            <VerticalStackLayout Spacing="18" 
+                                 Padding="40,30" 
+                                 HorizontalOptions="Center" 
+                                 MaximumWidthRequest="450"
+                                 WidthRequest="450">
 
-            <Entry x:Name="EmailEntry" 
-                   Placeholder="Email" 
-                   Keyboard="Email" />
+                <VerticalStackLayout Spacing="8" HorizontalOptions="Center" Margin="0,0,0,10">
+                    <Label Text="👤" FontSize="44" HorizontalOptions="Center" Margin="0,0,0,5"/>
+                    <Label Text="Criar Nova Conta"
+                           FontSize="28"
+                           FontAttributes="Bold"
+                           TextColor="White"
+                           HorizontalOptions="Center" />
+                    <Label Text="Registe-se para começar a controlar os seus gastos."
+                           FontSize="14"
+                           TextColor="#8E8E93"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
 
-            <Entry x:Name="PassEntry" 
-                   Placeholder="Palavra-passe" 
-                   IsPassword="True" />
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="NOME COMPLETO" FontSize="11" FontAttributes="Bold" TextColor="#2563EB" Margin="5,0"/>
+                    <Border Style="{StaticResource RegisterInputBorder}">
+                        <Entry x:Name="NomeEntry" 
+                               Placeholder="O seu nome completo" 
+                               PlaceholderColor="#48484A"
+                               TextColor="White"
+                               BackgroundColor="Transparent"
+                               VerticalOptions="Center" />
+                    </Border>
+                </VerticalStackLayout>
 
-            <Entry x:Name="ConfirmPassEntry" 
-                   Placeholder="Confirmar Palavra-passe" 
-                   IsPassword="True" />
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="EMAIL" FontSize="11" FontAttributes="Bold" TextColor="#2563EB" Margin="5,0"/>
+                    <Border Style="{StaticResource RegisterInputBorder}">
+                        <Entry x:Name="EmailEntry" 
+                               Placeholder="exemplo@email.com" 
+                               PlaceholderColor="#48484A"
+                               TextColor="White"
+                               Keyboard="Email"
+                               BackgroundColor="Transparent"
+                               VerticalOptions="Center" />
+                    </Border>
+                </VerticalStackLayout>
 
-            <Entry x:Name="TelemovelEntry" 
-                   Placeholder="Telemóvel" 
-                   Keyboard="Telephone" />
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="PALAVRA-PASSE" FontSize="11" FontAttributes="Bold" TextColor="#2563EB" Margin="5,0"/>
+                    <Border Style="{StaticResource RegisterInputBorder}">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <Entry x:Name="PassEntry" 
+                                   Placeholder="Crie uma password forte" 
+                                   PlaceholderColor="#48484A"
+                                   TextColor="White"
+                                   IsPassword="True"
+                                   BackgroundColor="Transparent"
+                                   VerticalOptions="Center" />
+                            <ImageButton x:Name="BtnTogglePass"
+                                         Grid.Column="1"
+                                         Source="olho_visivel.png"
+                                         Style="{StaticResource EyeButtonStyle}"
+                                         Clicked="AoClicarMostrarOcultarPass" />
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
 
-            <Label Text="Data de Nascimento:" Margin="0,10,0,0" />
-            <DatePicker x:Name="DataNascPicker" 
-                        Format="yyyy-MM-dd" />
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="CONFIRMAR PALAVRA-PASSE" FontSize="11" FontAttributes="Bold" TextColor="#2563EB" Margin="5,0"/>
+                    <Border Style="{StaticResource RegisterInputBorder}">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <Entry x:Name="ConfirmPassEntry" 
+                                   Placeholder="Repita a password" 
+                                   PlaceholderColor="#48484A"
+                                   TextColor="White"
+                                   IsPassword="True"
+                                   BackgroundColor="Transparent"
+                                   VerticalOptions="Center" />
+                            <ImageButton x:Name="BtnToggleConfirmPass"
+                                         Grid.Column="1"
+                                         Source="olho_visivel.png"
+                                         Style="{StaticResource EyeButtonStyle}"
+                                         Clicked="AoClicarMostrarOcultarConfirmPass" />
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
 
-            <Button x:Name="BtnRegistar" 
-                    Text="Criar Conta" 
-                    Clicked="AoClicarRegistar" 
-                    BackgroundColor="CornflowerBlue"
-                    TextColor="White"
-                    HeightRequest="50" 
-                    Margin="0,20,0,0"/>
+                <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+                    <VerticalStackLayout Grid.Column="0" Spacing="6">
+                        <Label Text="TELEMÓVEL" FontSize="11" FontAttributes="Bold" TextColor="#2563EB" Margin="5,0"/>
+                        <Border Style="{StaticResource RegisterInputBorder}">
+                            <Entry x:Name="TelemovelEntry" 
+                                   Placeholder="9xx..." 
+                                   PlaceholderColor="#48484A"
+                                   TextColor="White"
+                                   Keyboard="Telephone"
+                                   BackgroundColor="Transparent"
+                                   VerticalOptions="Center" />
+                        </Border>
+                    </VerticalStackLayout>
 
-            <ActivityIndicator x:Name="Indicador" 
-                               IsRunning="False" 
-                               Color="CornflowerBlue"
-                               HorizontalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="6">
+                        <Label Text="NASCIMENTO" FontSize="11" FontAttributes="Bold" TextColor="#2563EB" Margin="5,0"/>
+                        <Border Style="{StaticResource RegisterInputBorder}">
+                            <DatePicker x:Name="DataNascPicker" 
+                                        Format="dd/MM/yyyy" 
+                                        TextColor="White"
+                                        MinimumHeightRequest="50"/>
+                        </Border>
+                    </VerticalStackLayout>
+                </Grid>
 
-        </VerticalStackLayout>
-    </ScrollView>
+                <VerticalStackLayout Spacing="15" Margin="0,15,0,0">
+                    <Button x:Name="BtnRegistar" 
+                            Text="CRIAR MINHA CONTA" 
+                            Clicked="AoClicarRegistar" 
+                            BackgroundColor="#2563EB" 
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            CornerRadius="12"
+                            HeightRequest="55" />
+
+                    <ActivityIndicator x:Name="Indicador" 
+                                       IsRunning="False" 
+                                       Color="#2563EB"
+                                       HorizontalOptions="Center" />
+                </VerticalStackLayout>
+
+                <HorizontalStackLayout HorizontalOptions="Center" Spacing="5" Margin="0,10,0,20">
+                    <Label Text="Já tem conta?" TextColor="#8E8E93" FontSize="14" />
+                    <Label Text="Faça login aqui" 
+                           TextColor="#2563EB" 
+                           FontAttributes="Bold"
+                           FontSize="14">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="AoClicarIrParaLogin" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </HorizontalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>
