@@ -5,13 +5,43 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:FinanceUI"
     xmlns:views="clr-namespace:FinanceUI.Views"
-    Title="FinanceUI">
+    Title="FinanceUI"
+    FlyoutBackgroundColor="#070B10"
+    FlyoutWidth="280"
+    FlyoutBehavior="Locked"
+    Shell.NavBarIsVisible="False">
+
+    <Shell.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Layout" x:Key="FloutItemStyle">
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="Transparent" />
+                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="#8E8E93" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Selected">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="#1A2563EB" />
+                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="#2563EB" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Shell.Resources>
 
     <Shell.FlyoutHeader>
-        <VerticalStackLayout BackgroundColor="#141414" Padding="20" Spacing="10">
+        <VerticalStackLayout BackgroundColor="#070B10" Padding="30,40,30,20" Spacing="10">
             <Image Source="applogo.png" 
-               HeightRequest="80" 
-               HorizontalOptions="Center" />
+                   HeightRequest="60" 
+                   HorizontalOptions="Start" />
+            <BoxView Color="#1A1A1C" HeightRequest="1" Margin="0,20,0,10" />
         </VerticalStackLayout>
     </Shell.FlyoutHeader>
 
@@ -44,5 +74,15 @@
             Route="SuportePage"
             ContentTemplate="{DataTemplate views:SuportePage}" />
     </FlyoutItem>
+
+    <Shell.FlyoutFooter>
+        <VerticalStackLayout Padding="20" BackgroundColor="#070B10">
+            <Label Text="Versão Beta" 
+                   TextColor="#48484A" 
+                   FontSize="10" 
+                   HorizontalOptions="Center" 
+                   Margin="0,10"/>
+        </VerticalStackLayout>
+    </Shell.FlyoutFooter>
 
 </Shell>

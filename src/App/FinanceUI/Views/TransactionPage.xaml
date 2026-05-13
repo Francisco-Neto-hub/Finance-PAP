@@ -25,7 +25,7 @@
         </Style>
     </ContentPage.Resources>
 
-    <Grid ColumnDefinitions="280,*" RowDefinitions="Auto,*">
+    <Grid ColumnDefinitions="*" RowDefinitions="Auto,*">
 
         <Grid Grid.RowSpan="2"
               Grid.Column="0"

@@ -20,7 +20,7 @@
         </Style>
     </ContentPage.Resources>
 
-    <Grid ColumnDefinitions="280,*" RowDefinitions="*">
+    <Grid ColumnDefinitions="*" RowDefinitions="*">
 
         <Grid Grid.Column="0" BackgroundColor="#070B10" />
 

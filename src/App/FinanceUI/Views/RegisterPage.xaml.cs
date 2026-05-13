@@ -16,6 +16,24 @@ public partial class RegisterPage : ContentPage
         DataNascPicker.MaximumDate = DateTime.Now.AddYears(-18);
     }
 
+    private void AoClicarMostrarOcultarPass(object sender, EventArgs e)
+    {
+        // Inverte o estado atual
+        PassEntry.IsPassword = !PassEntry.IsPassword;
+
+        // Altera o ícone
+        BtnTogglePass.Source = PassEntry.IsPassword ? "olho_visivel.png" : "olho_oculto.png";
+    }
+
+    private void AoClicarMostrarOcultarConfirmPass(object sender, EventArgs e)
+    {
+        // Inverte o estado atual
+        ConfirmPassEntry.IsPassword = !ConfirmPassEntry.IsPassword;
+
+        // Altera o ícone
+        BtnToggleConfirmPass.Source = ConfirmPassEntry.IsPassword ? "olho_visivel.png" : "olho_oculto.png";
+    }
+
     private async void AoClicarRegistar(object sender, EventArgs e)
     {
         // 1. Validações básicas de UI
@@ -80,5 +98,11 @@ public partial class RegisterPage : ContentPage
             Indicador.IsRunning = false;
             BtnRegistar.IsEnabled = true;
         }
+    }
+
+    private async void AoClicarIrParaLogin(object sender, EventArgs e)
+    {
+        // Navega de volta para a página de Login
+        await Navigation.PopAsync();
     }
 }

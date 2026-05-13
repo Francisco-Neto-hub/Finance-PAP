@@ -13,7 +13,7 @@
     </ContentPage.ToolbarItems>
 
     <!-- GRID PRINCIPAL -->
-    <Grid ColumnDefinitions="280,*"
+    <Grid ColumnDefinitions="*"
           RowDefinitions="Auto,*">
 
         <!-- LADO ESQUERDO VAZIO -->
@@ -50,8 +50,8 @@
                     </VerticalStackLayout>
 
                     <!-- CARDS -->
-                    <Grid ColumnDefinitions="2*,*,*"
-      ColumnSpacing="16">
+                    <Grid ColumnDefinitions="2*,1*,1*"
+      ColumnSpacing="15" Margin="0,0,0,25">
 
                         <!-- SALDO -->
                         <Border Grid.Column="0"

@@ -4,76 +4,149 @@
              x:Class="FinanceUI.Views.ProfilePage"
              BackgroundColor="#0F1115">
 
-    <ScrollView>
-        <VerticalStackLayout Spacing="20" Padding="20">
+    <ContentPage.Resources>
+        <Style x:Key="ProfileInputBorder" TargetType="Border">
+            <Setter Property="Stroke" Value="#2C2C2E" />
+            <Setter Property="Background" Value="#111318" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        </Style>
 
-            <Frame BorderColor="LightGray" CornerRadius="10" Padding="20" HasShadow="True">
-                <VerticalStackLayout Spacing="15">
-                    <Label Text="Dados Pessoais" FontAttributes="Bold" FontSize="18" TextColor="CornflowerBlue"/>
+        <Style x:Key="ProfileSectionBorder" TargetType="Border">
+            <Setter Property="Stroke" Value="#2C2C2E" />
+            <Setter Property="Background" Value="#161618" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 20" />
+            <Setter Property="Padding" Value="25" />
+            <Setter Property="Margin" Value="0,0,0,25" />
+        </Style>
 
-                    <VerticalStackLayout>
-                        <Label Text="Nome Completo" FontSize="12" TextColor="Gray"/>
-                        <Entry x:Name="NomeEntry" Placeholder="O teu nome" />
-                    </VerticalStackLayout>
+        <Style x:Key="TogglePassButtonStyle" TargetType="ImageButton">
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="HeightRequest" Value="40" />
+            <Setter Property="WidthRequest" Value="40" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="Padding" Value="8" />
+        </Style>
+    </ContentPage.Resources>
 
-                    <VerticalStackLayout>
-                        <Label Text="Email" FontSize="12" TextColor="Gray"/>
-                        <Entry x:Name="EmailEntry" Keyboard="Email" Placeholder="O teu email" />
-                    </VerticalStackLayout>
+    <Grid ColumnDefinitions="*">
 
-                    <VerticalStackLayout>
-                        <Label Text="Telemóvel" FontSize="12" TextColor="Gray"/>
-                        <Entry x:Name="TelemovelEntry" Keyboard="Telephone" Placeholder="O teu telemóvel" />
-                    </VerticalStackLayout>
+        <Grid Grid.Column="0" BackgroundColor="#070B10" />
 
-                    <VerticalStackLayout>
-                        <Label Text="Data de Nascimento" FontSize="12" TextColor="Gray"/>
-                        <DatePicker x:Name="DataNascPicker" Format="yyyy-MM-dd" />
-                    </VerticalStackLayout>
+        <ScrollView Grid.Column="1">
+            <VerticalStackLayout Padding="30,25" Spacing="0">
 
-                    <Button Text="Guardar Alterações" 
-                            Clicked="AoClicarGuardarPerfil" 
-                            BackgroundColor="CornflowerBlue" 
-                            TextColor="White"
-                            CornerRadius="8"
-                            HeightRequest="45"
-                            Margin="0,10,0,0"/>
+                <VerticalStackLayout Spacing="2" Margin="0,0,0,30">
+                    <Label Text="O Meu Perfil" FontSize="28" FontAttributes="Bold" TextColor="White"/>
+                    <Label Text="Gere as tuas informações e definições de segurança" FontSize="14" TextColor="#8E8E93"/>
                 </VerticalStackLayout>
-            </Frame>
 
-            <Frame BorderColor="LightGray" CornerRadius="10" Padding="20" HasShadow="True">
-                <VerticalStackLayout Spacing="15">
-                    <Label Text="Segurança" FontAttributes="Bold" FontSize="18" TextColor="Orange"/>
+                <Label Text="DADOS PESSOAIS" FontSize="12" FontAttributes="Bold" TextColor="#2563EB" Margin="5,0,0,10"/>
+                <Border Style="{StaticResource ProfileSectionBorder}">
+                    <VerticalStackLayout Spacing="20">
+                        <Grid ColumnDefinitions="*, *" ColumnSpacing="20">
+                            <VerticalStackLayout Grid.Column="0" Spacing="5">
+                                <Label Text="Nome Completo" FontSize="12" TextColor="#8E8E93" Margin="5,0"/>
+                                <Border Style="{StaticResource ProfileInputBorder}">
+                                    <Entry x:Name="NomeEntry" Placeholder="O teu nome" TextColor="White" PlaceholderColor="#48484A" BackgroundColor="Transparent" HeightRequest="50"/>
+                                </Border>
+                            </VerticalStackLayout>
 
-                    <VerticalStackLayout>
-                        <Label Text="Password Atual" FontSize="12" TextColor="Gray"/>
-                        <Entry x:Name="AntigaPassEntry" IsPassword="True" Placeholder="Insere a password atual"/>
+                            <VerticalStackLayout Grid.Column="1" Spacing="5">
+                                <Label Text="Endereço de Email" FontSize="12" TextColor="#8E8E93" Margin="5,0"/>
+                                <Border Style="{StaticResource ProfileInputBorder}">
+                                    <Entry x:Name="EmailEntry" Keyboard="Email" Placeholder="exemplo@email.com" TextColor="White" PlaceholderColor="#48484A" BackgroundColor="Transparent" HeightRequest="50"/>
+                                </Border>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*, *" ColumnSpacing="20">
+                            <VerticalStackLayout Grid.Column="0" Spacing="5">
+                                <Label Text="Telemóvel" FontSize="12" TextColor="#8E8E93" Margin="5,0"/>
+                                <Border Style="{StaticResource ProfileInputBorder}">
+                                    <Entry x:Name="TelemovelEntry" Keyboard="Telephone" Placeholder="+351 9xx xxx xxx" TextColor="White" PlaceholderColor="#48484A" BackgroundColor="Transparent" HeightRequest="50"/>
+                                </Border>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="1" Spacing="5">
+                                <Label Text="Data de Nascimento" FontSize="12" TextColor="#8E8E93" Margin="5,0"/>
+                                <Border Style="{StaticResource ProfileInputBorder}">
+                                    <DatePicker x:Name="DataNascPicker" Format="dd/MM/yyyy" TextColor="White" HeightRequest="50"/>
+                                </Border>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Button Text="Guardar Alterações" Clicked="AoClicarGuardarPerfil" BackgroundColor="#2563EB" TextColor="White" FontAttributes="Bold" CornerRadius="10" HeightRequest="48" HorizontalOptions="End" Padding="30,0"/>
                     </VerticalStackLayout>
+                </Border>
 
-                    <VerticalStackLayout>
-                        <Label Text="Nova Password" FontSize="12" TextColor="Gray"/>
-                        <Entry x:Name="NovaPassEntry" IsPassword="True" Placeholder="Insere a nova password"/>
+                <Label Text="SEGURANÇA" FontSize="12" FontAttributes="Bold" TextColor="#F59E0B" Margin="5,0,0,10"/>
+                <Border Style="{StaticResource ProfileSectionBorder}">
+                    <VerticalStackLayout Spacing="20">
+
+                        <Grid ColumnDefinitions="*, *" ColumnSpacing="20">
+
+                            <VerticalStackLayout Grid.Column="0" Spacing="5">
+                                <Label Text="Password Atual" FontSize="12" TextColor="#8E8E93" Margin="5,0"/>
+                                <Border Style="{StaticResource ProfileInputBorder}">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <Entry x:Name="AntigaPassEntry" 
+                                               IsPassword="True" 
+                                               Placeholder="••••••••" 
+                                               TextColor="White" 
+                                               PlaceholderColor="#48484A" 
+                                               BackgroundColor="Transparent" 
+                                               HeightRequest="50"
+                                               Grid.Column="0"/>
+                                        <ImageButton x:Name="BtnToggleAntigaPass"
+                                                     Grid.Column="1"
+                                                     Source="olho_visivel.png"
+                                                     Style="{StaticResource TogglePassButtonStyle}"
+                                                     Clicked="AoClicarMostrarOcultarAntigaPassword"/>
+                                    </Grid>
+                                </Border>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="1" Spacing="5">
+                                <Label Text="Nova Password" FontSize="12" TextColor="#8E8E93" Margin="5,0"/>
+                                <Border Style="{StaticResource ProfileInputBorder}">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <Entry x:Name="NovaPassEntry" 
+                                               IsPassword="True" 
+                                               Placeholder="••••••••" 
+                                               TextColor="White" 
+                                               PlaceholderColor="#48484A" 
+                                               BackgroundColor="Transparent" 
+                                               HeightRequest="50"
+                                               Grid.Column="0"/>
+                                        <ImageButton x:Name="BtnToggleNovaPass"
+                                                     Grid.Column="1"
+                                                     Source="olho_visivel.png"
+                                                     Style="{StaticResource TogglePassButtonStyle}"
+                                                     Clicked="AoClicarMostrarOcultarNovaPassword"/>
+                                    </Grid>
+                                </Border>
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+                        <Button Text="Mudar Password" Clicked="AoClicarMudarPass" BackgroundColor="#F59E0B" TextColor="White" FontAttributes="Bold" CornerRadius="10" HeightRequest="48" HorizontalOptions="End" Padding="30,0"/>
                     </VerticalStackLayout>
+                </Border>
 
-                    <Button Text="Mudar Password" 
-                            Clicked="AoClicarMudarPass" 
-                            BackgroundColor="Orange" 
-                            TextColor="White"
-                            CornerRadius="8"
-                            HeightRequest="45"
-                            Margin="0,10,0,0"/>
-                </VerticalStackLayout>
-            </Frame>
+                <Label Text="GESTÃO DA CONTA" FontSize="12" FontAttributes="Bold" TextColor="#EF4444" Margin="5,0,0,10"/>
+                <Border Style="{StaticResource ProfileSectionBorder}" Stroke="#442727">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Terminar Sessão" FontSize="16" FontAttributes="Bold" TextColor="White"/>
+                            <Label Text="Irá sair da sua conta neste dispositivo" FontSize="12" TextColor="#8E8E93"/>
+                        </VerticalStackLayout>
+                        <Button Grid.Column="1" Text="Sair da Conta" Clicked="AoClicarLogout" BackgroundColor="#EF4444" TextColor="White" FontAttributes="Bold" CornerRadius="10" HeightRequest="45" Padding="25,0"/>
+                    </Grid>
+                </Border>
 
-            <Frame BorderColor="LightGray" CornerRadius="10">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Conta" FontAttributes="Bold" FontSize="18" />
-                    <Button Text="Terminar Sessão" Clicked="AoClicarLogout" BackgroundColor="Red" />
-                </VerticalStackLayout>
-            </Frame>
-
-            <ActivityIndicator x:Name="Indicador" IsRunning="False" Color="CornflowerBlue" />
-
-        </VerticalStackLayout>
-    </ScrollView>
+                <ActivityIndicator x:Name="Indicador" IsRunning="False" Color="#2563EB" HorizontalOptions="Center" Margin="0,20"/>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>

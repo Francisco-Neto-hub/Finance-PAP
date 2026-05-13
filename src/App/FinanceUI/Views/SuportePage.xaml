@@ -1,44 +1,99 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FinanceUI.Views.SuportePage"
-             BackgroundColor="#0b0b0b"
-             Title="Suporte Técnico">
+             BackgroundColor="#0F1115">
 
-    <VerticalStackLayout Padding="25" Spacing="15">
-        <Label Text="Como podemos ajudar?" 
-               TextColor="#00C2FF" 
-               FontSize="22" FontAttributes="Bold" />
+    <ContentPage.Resources>
+        <Style x:Key="SupportInputBorder" TargetType="Border">
+            <Setter Property="Stroke" Value="#2C2C2E" />
+            <Setter Property="Background" Value="#111318" />
+            <Setter Property="Padding" Value="12,2" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        </Style>
+    </ContentPage.Resources>
 
-        <Label Text="Descreva o seu problema ou dúvida abaixo." 
-               TextColor="Gray" FontSize="14" Margin="0,0,0,10"/>
+    <Grid ColumnDefinitions="*">
 
-        <Border Stroke="#262626" StrokeThickness="1" BackgroundColor="#141414" Padding="5">
-            <Entry x:Name="txtAssunto" 
-                   Placeholder="Assunto (ex: Erro no Saldo)" 
-                   PlaceholderColor="#666"
-                   TextColor="White"/>
-        </Border>
+        <Grid Grid.Column="0" BackgroundColor="#070B10" />
 
-        <Border Stroke="#262626" StrokeThickness="1" BackgroundColor="#141414" Padding="5">
-            <Editor x:Name="txtMensagem" 
-                    Placeholder="Escreva aqui a sua mensagem..." 
-                    PlaceholderColor="#666"
-                    TextColor="White"
-                    HeightRequest="180" />
-        </Border>
+        <ScrollView Grid.Column="1">
+            <VerticalStackLayout Padding="30,25" Spacing="0">
 
-        <Button x:Name="btnEnviar"
-                Text="ENVIAR TICKET"
-                BackgroundColor="#00C2FF"
-                TextColor="Black"
-                FontAttributes="Bold"
-                HeightRequest="50"
-                CornerRadius="8"
-                Clicked="OnEnviarTicketClicked" />
+                <VerticalStackLayout Spacing="2" Margin="0,0,0,30">
+                    <Label Text="Suporte Técnico" FontSize="28" FontAttributes="Bold" TextColor="White"/>
+                    <Label Text="Diga-nos como podemos ajudar e a nossa equipa responderá em breve." FontSize="14" TextColor="#8E8E93"/>
+                </VerticalStackLayout>
 
-        <ActivityIndicator x:Name="indicator" 
-                           IsRunning="False" 
-                           Color="#00C2FF" 
-                           HorizontalOptions="Center" />
-    </VerticalStackLayout>
+                <Border Padding="25" 
+                        BackgroundColor="#161618"
+                        Stroke="#2C2C2E"
+                        StrokeShape="RoundRectangle 20">
+
+                    <VerticalStackLayout Spacing="20">
+
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="ASSUNTO" FontSize="12" FontAttributes="Bold" TextColor="#00C2FF" Margin="5,0"/>
+                            <Border Style="{StaticResource SupportInputBorder}">
+                                <Entry x:Name="txtAssunto" 
+                                       Placeholder="Ex: Erro ao carregar extrato" 
+                                       TextColor="White" 
+                                       PlaceholderColor="#48484A" 
+                                       BackgroundColor="Transparent"
+                                       HeightRequest="50"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="DESCRIÇÃO DO PROBLEMA" FontSize="12" FontAttributes="Bold" TextColor="#00C2FF" Margin="5,0"/>
+                            <Border Style="{StaticResource SupportInputBorder}" Padding="12,10">
+                                <Editor x:Name="txtMensagem" 
+                                        Placeholder="Descreva detalhadamente o que aconteceu..." 
+                                        TextColor="White" 
+                                        PlaceholderColor="#48484A" 
+                                        BackgroundColor="Transparent"
+                                        HeightRequest="200"
+                                        AutoSize="Disabled"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <Grid ColumnDefinitions="*, Auto" Margin="0,10,0,0">
+                            <ActivityIndicator x:Name="indicator" 
+                                               IsRunning="False" 
+                                               Color="#00C2FF" 
+                                               HorizontalOptions="Start"
+                                               VerticalOptions="Center"/>
+
+                            <Button Grid.Column="1"
+                                    x:Name="btnEnviar"
+                                    Text="ENVIAR TICKET"
+                                    BackgroundColor="#00C2FF"
+                                    TextColor="Black"
+                                    FontAttributes="Bold"
+                                    HeightRequest="50"
+                                    Padding="40,0"
+                                    CornerRadius="10"
+                                    Clicked="OnEnviarTicketClicked" />
+                        </Grid>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Margin="0,25,0,0" 
+                        Padding="15" 
+                        BackgroundColor="#0F1115" 
+                        Stroke="#1A1A1C" 
+                        StrokeShape="RoundRectangle 12">
+                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                        <Label Text="✉️" FontSize="16" VerticalOptions="Center"/>
+                        <Label Text="Também pode contactar-nos via email: suporte@finance.com" 
+                               FontSize="12" 
+                               TextColor="#48484A" 
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>

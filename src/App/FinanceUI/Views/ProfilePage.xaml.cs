@@ -37,7 +37,23 @@ public partial class ProfilePage : ContentPage
 
         Indicador.IsRunning = false;
     }
+    private void AoClicarMostrarOcultarAntigaPassword(object sender, EventArgs e)
+    {
+        // Inverte o estado atual
+        AntigaPassEntry.IsPassword = !AntigaPassEntry.IsPassword;
 
+        // Altera o ícone
+        BtnToggleAntigaPass.Source = AntigaPassEntry.IsPassword ? "olho_visivel.png" : "olho_oculto.png";
+    }
+
+    private void AoClicarMostrarOcultarNovaPassword(object sender, EventArgs e)
+    {
+        // Inverte o estado atual
+        NovaPassEntry.IsPassword = !NovaPassEntry.IsPassword;
+
+        // Altera o ícone
+        BtnToggleNovaPass.Source = NovaPassEntry.IsPassword ? "olho_visivel.png" : "olho_oculto.png";
+    }
     private async void AoClicarLogout(object sender, EventArgs e)
     {
         SecureStorage.Default.Remove("auth_token");
