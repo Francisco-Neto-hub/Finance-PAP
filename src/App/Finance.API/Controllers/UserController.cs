@@ -41,6 +41,34 @@ namespace Finance.API.Controllers
             }
         }
 
+        [HttpPost("{idCliente}/enviar-ticket")]
+        public async Task<IActionResult> EnviarTicket(int idCliente, [FromBody] CriarTicketDTO ticketDto)
+        {
+            if (string.IsNullOrEmpty(ticketDto.Assunto) || string.IsNullOrEmpty(ticketDto.Mensagem))
+            {
+                return BadRequest("Assunto e Mensagem são obrigatórios.");
+            }
+
+            using var connection = _context.CreateConnection();
+
+            var query = @"
+                        INSERT INTO Suporte_Ticket (idCliente, Assunto, Mensagem, DataCriacao, IsResolvido)
+                        VALUES (@IdCliente, @Assunto, @Mensagem, @DataCriacao, @IsResolvido)";
+
+            var parametros = new
+            {
+                IdCliente = idCliente,
+                Assunto = ticketDto.Assunto,
+                Mensagem = ticketDto.Mensagem,
+                DataCriacao = DateTime.Now,
+                IsResolvido = false
+            };
+
+            await connection.ExecuteAsync(query, parametros);
+
+            return Ok(new { mensagem = "Ticket enviado com sucesso! A nossa equipa responderá em breve." });
+        }
+
         // 1. ALTERAR DADOS DO PERFIL
         [Authorize]
         [HttpPut("atualizar-perfil")]

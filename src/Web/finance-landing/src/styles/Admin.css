@@ -209,57 +209,88 @@ tbody tr:last-child td { border-bottom: none; }
 /* --- 4. CENTRO DE SUPORTE (TICKETS) --- */
 .tickets-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 20px;
+    margin-top: 25px;
 }
 
 .ticket-card {
-    background: var(--card-bg);
+    background: var(--finance-nav);
     border: 1px solid var(--border-color);
-    padding: 1.5rem;
+    padding: 20px;
     border-radius: 12px;
     position: relative;
-    transition: transform 0.2s ease;
+    transition: var(--transition);
 }
-.ticket-card:hover { transform: translateY(-3px); }
 
-.ticket-card.pending { border-left: 4px solid var(--finance-blue); }
-.ticket-card.resolved { opacity: 0.6; border-left: 4px solid var(--success-green); }
+.ticket-card:hover {
+    border-color: var(--finance-blue);
+    transform: translateY(-3px);
+}
 
 .ticket-badge {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     font-size: 0.7rem;
     text-transform: uppercase;
-    margin-bottom: 12px;
     font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 15px;
 }
-.ticket-card.pending .ticket-badge { color: var(--finance-blue); }
-.ticket-card.resolved .ticket-badge { color: var(--success-green); }
 
-.ticket-msg { color: var(--text-muted); font-style: italic; margin: 15px 0; font-size: 0.9rem; line-height: 1.5; }
+.ticket-card.pending .ticket-badge {
+    background: rgba(255, 170, 0, 0.1);
+    color: #ffaa00;
+}
+
+.ticket-card.resolved .ticket-badge {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success-green);
+    opacity: 0.6;
+}
+
+.ticket-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    color: var(--finance-blue);
+}
+
+.ticket-msg {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    font-style: italic;
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
 
 .ticket-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.8rem;
     border-top: 1px solid var(--border-color);
-    padding-top: 12px;
+    padding-top: 15px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
 }
 
 .btn-resolve {
-    background: var(--finance-blue);
-    color: var(--admin-bg);
-    border: none;
+    background: transparent;
+    border: 1px solid var(--success-green);
+    color: var(--success-green);
     padding: 6px 12px;
-    border-radius: 4px;
-    font-weight: bold;
+    border-radius: 6px;
     cursor: pointer;
-    transition: 0.2s;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: var(--transition);
 }
-.btn-resolve:hover { filter: brightness(1.1); }
+
+.btn-resolve:hover {
+    background: var(--success-green);
+    color: #000;
+}
 
 /* Badges de Estado */
 .status-badge {

@@ -68,6 +68,21 @@ public partial class LoginPage : ContentPage
         await Navigation.PushAsync(new RecuperarPasswordPage(_apiService));
     }
 
+    private void AoClicarMostrarOcultarPassword(object sender, EventArgs e)
+    {
+        // Inverte o estado atual do campo de palavra-passe
+        PassEntry.IsPassword = !PassEntry.IsPassword;
+
+        // Altera o ícone do botão com base na visibilidade
+        if (PassEntry.IsPassword)
+        {
+            BtnTogglePassword.Source = "olho_visivel.png";
+        }
+        else
+        {
+            BtnTogglePassword.Source = "olho_oculto.png";
+        }
+    }
     private async void AoClicarCriarConta(object sender, EventArgs e)
     {
         // Navega para a p�gina de registo

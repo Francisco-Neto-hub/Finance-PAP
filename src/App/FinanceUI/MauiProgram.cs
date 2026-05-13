@@ -32,6 +32,7 @@ namespace FinanceUI
             builder.Services.AddTransient<HistoricoPage>();
             builder.Services.AddTransient<RelatoriosPage>();
             builder.Services.AddTransient<GraficosPage>();
+            builder.Services.AddTransient<SuportePage>();
 
 #if DEBUG
             builder.Logging.AddDebug();

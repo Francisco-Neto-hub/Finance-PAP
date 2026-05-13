@@ -49,5 +49,11 @@
             /// </summary>
             public string NovaPassword { get; set; }
         }
+
+        public class CriarTicketDTO
+        {
+            public string Assunto { get; set; }
+            public string Mensagem { get; set; }
+        }
     }
 }
