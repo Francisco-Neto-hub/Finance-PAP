@@ -3,103 +3,156 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:FinanceUI.Models" 
              x:Class="FinanceUI.Views.RelatoriosPage"
-             Title="Relatórios Detalhados"
-             BackgroundColor="#121212">
+             BackgroundColor="#0F1115">
 
-    <Grid RowDefinitions="Auto, *">
+    <ContentPage.Resources>
+        <Style x:Key="InputIconBorder" TargetType="Border">
+            <Setter Property="Stroke" Value="#2C2C2E" />
+            <Setter Property="Background" Value="#111318" />
+            <Setter Property="Padding" Value="12,2" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        </Style>
+    </ContentPage.Resources>
 
-        <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="15">
-            <Label Text="Filtrar Movimentos" FontSize="18" FontAttributes="Bold" TextColor="White" />
+    <Grid ColumnDefinitions="280,*">
 
-            <Frame BackgroundColor="#1E1E1E" BorderColor="#333" CornerRadius="12" Padding="15">
+        <Grid Grid.Column="0" BackgroundColor="#070B10" />
+
+        <Grid Grid.Column="1" RowDefinitions="Auto, Auto, *" Padding="30,25">
+
+            <VerticalStackLayout Grid.Row="0" Spacing="2" Margin="0,0,0,20">
+                <Label Text="Relatórios e Filtros" FontSize="28" FontAttributes="Bold" TextColor="White"/>
+                <Label Text="Pesquise movimentos específicos por período ou categoria" FontSize="14" TextColor="#8E8E93"/>
+            </VerticalStackLayout>
+
+            <Border Grid.Row="1" 
+                    Padding="20" 
+                    Margin="0,0,0,25"
+                    BackgroundColor="#161618"
+                    Stroke="#2C2C2E"
+                    StrokeShape="RoundRectangle 18">
+
                 <VerticalStackLayout Spacing="15">
 
-                    <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+                    <Grid ColumnDefinitions="*, *, 1.5*" ColumnSpacing="15">
                         <VerticalStackLayout Grid.Column="0" Spacing="5">
-                            <Label Text="Mês" FontSize="12" TextColor="#A0A0A0" />
-                            <Picker x:Name="PickerMes" TextColor="White" BackgroundColor="#2C2C2C" Title="Selecione o mês" />
+                            <Label Text="Mês" FontSize="12" TextColor="#8E8E93" Margin="5,0"/>
+                            <Border Style="{StaticResource InputIconBorder}">
+                                <Picker x:Name="PickerMes" Title="Mês" TextColor="White" TitleColor="#48484A"/>
+                            </Border>
                         </VerticalStackLayout>
 
                         <VerticalStackLayout Grid.Column="1" Spacing="5">
-                            <Label Text="Ano" FontSize="12" TextColor="#A0A0A0" />
-                            <Picker x:Name="PickerAno" TextColor="White" BackgroundColor="#2C2C2C" Title="Selecione o ano" />
+                            <Label Text="Ano" FontSize="12" TextColor="#8E8E93" Margin="5,0"/>
+                            <Border Style="{StaticResource InputIconBorder}">
+                                <Picker x:Name="PickerAno" Title="Ano" TextColor="White" TitleColor="#48484A"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="2" Spacing="5">
+                            <Label Text="Categoria" FontSize="12" TextColor="#8E8E93" Margin="5,0"/>
+                            <Border Style="{StaticResource InputIconBorder}">
+                                <Picker x:Name="PickerCategoria" 
+                                        Title="Todas as Categorias" 
+                                        TextColor="White" 
+                                        TitleColor="#48484A"
+                                        ItemDisplayBinding="{Binding Nome}" />
+                            </Border>
                         </VerticalStackLayout>
                     </Grid>
 
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="Conta" FontSize="12" TextColor="#A0A0A0" />
-                        <Picker x:Name="PickerConta" 
-                                Title="A carregar contas..." 
+                    <Grid ColumnDefinitions="*, 1.5*" ColumnSpacing="15">
+                        <VerticalStackLayout Grid.Column="0" Spacing="5">
+                            <Label Text="Conta Bancária" FontSize="12" TextColor="#8E8E93" Margin="5,0"/>
+                            <Border Style="{StaticResource InputIconBorder}">
+                                <Picker x:Name="PickerConta" 
+                                        Title="Selecionar conta" 
+                                        TextColor="White" 
+                                        TitleColor="#48484A"
+                                        ItemDisplayBinding="{Binding NomeConta}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="1" Spacing="5">
+                            <Label Text="Pesquisa" FontSize="12" TextColor="#8E8E93" Margin="5,0"/>
+                            <Border Style="{StaticResource InputIconBorder}">
+                                <SearchBar x:Name="SearchBarBusca" 
+                                           Placeholder="Nome da transação..." 
+                                           TextColor="White" 
+                                           PlaceholderColor="#48484A"
+                                           BackgroundColor="Transparent"
+                                           CancelButtonColor="#EF4444" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,10,0,0">
+                        <ActivityIndicator x:Name="LoadingSpinner" IsRunning="False" Color="#2563EB" HorizontalOptions="Start" />
+
+                        <Button Grid.Column="1"
+                                Text="Procurar Movimentos" 
+                                Clicked="AoClicarProcurar" 
+                                BackgroundColor="#2563EB" 
                                 TextColor="White" 
-                                BackgroundColor="#2C2C2C" 
-                                ItemDisplayBinding="{Binding NomeConta}" />
-                    </VerticalStackLayout>
-
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="Categoria" FontSize="12" TextColor="#A0A0A0" />
-                        <Picker x:Name="PickerCategoria" 
-                                Title="Todas as Categorias" 
-                                TextColor="White" 
-                                BackgroundColor="#2C2C2C" 
-                                ItemDisplayBinding="{Binding Nome}" />
-                    </VerticalStackLayout>
-
-                    <SearchBar x:Name="SearchBarBusca" 
-                               Placeholder="Pesquisar transação..." 
-                               TextColor="White" 
-                               BackgroundColor="#2C2C2C" 
-                               CancelButtonColor="Red" />
-
-                    <Button Text="Procurar Movimentos" 
-                            Clicked="AoClicarProcurar" 
-                            BackgroundColor="#512BD4" 
-                            TextColor="White" 
-                            CornerRadius="8" 
-                            FontAttributes="Bold" 
-                            HeightRequest="45" />
-
-                    <ActivityIndicator x:Name="LoadingSpinner" IsRunning="False" IsVisible="False" Color="#AC94F4" HorizontalOptions="Center" />
+                                FontAttributes="Bold"
+                                HeightRequest="48"
+                                Padding="30,0"
+                                CornerRadius="10" />
+                    </Grid>
                 </VerticalStackLayout>
-            </Frame>
+            </Border>
 
-            <Label x:Name="LblResumoPesquisa" Text="Resultados:" FontSize="16" FontAttributes="Bold" TextColor="White" IsVisible="False" Margin="0,10,0,0"/>
-        </VerticalStackLayout>
+            <Grid Grid.Row="2" RowDefinitions="Auto, *">
+                <Label x:Name="LblResumoPesquisa" Grid.Row="0" Text="RESULTADOS ENCONTRADOS" FontSize="12" FontAttributes="Bold" TextColor="#2563EB" Margin="5,0,0,10" IsVisible="False"/>
 
-        <CollectionView x:Name="ListaExtrato" Grid.Row="1" Margin="20,0,20,10">
-            <CollectionView.EmptyView>
-                <Label Text="Nenhum movimento encontrado para estes filtros." TextColor="Gray" HorizontalOptions="Center" Margin="0,30" />
-            </CollectionView.EmptyView>
+                <CollectionView x:Name="ListaExtrato" Grid.Row="1">
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10" Margin="0,50">
+                            <Label Text="🔍" FontSize="50" HorizontalTextAlignment="Center"/>
+                            <Label Text="Nenhum movimento encontrado." TextColor="#8E8E93" HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </CollectionView.EmptyView>
 
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:RelatorioTransacaoDTO">
-                    <Frame BackgroundColor="#1E1E1E" BorderColor="#333" CornerRadius="10" Padding="15" Margin="0,0,0,10">
-                        <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto, Auto" RowSpacing="5">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:RelatorioTransacaoDTO">
+                            <Border Padding="16" 
+                                    Margin="0,0,0,12"
+                                    BackgroundColor="#1C1C1E"
+                                    Stroke="#2C2C2E"
+                                    StrokeShape="RoundRectangle 15">
 
-                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding NomeTransacao}" FontAttributes="Bold" FontSize="16" TextColor="White" />
+                                <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto" RowSpacing="10">
 
-                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding ValorTransacao, StringFormat='{0:C}'}" FontAttributes="Bold" FontSize="16" 
-                                   TextColor="{Binding TipoMovimento, Converter={StaticResource CorValorConverter}}" />
+                                    <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="2">
+                                        <Label Text="{Binding NomeTransacao}" FontAttributes="Bold" FontSize="16" TextColor="White" LineBreakMode="TailTruncation"/>
+                                        <HorizontalStackLayout Spacing="8">
+                                            <Label Text="{Binding DataTransacao, StringFormat='{0:dd/MM/yyyy}'}" FontSize="12" TextColor="#8E8E93" />
+                                            <Label Text="•" TextColor="#48484A" />
+                                            <Label Text="{Binding Categoria}" FontSize="12" TextColor="#60A5FA" />
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
 
-                            <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="10">
-                                <Label Text="{Binding DataTransacao, StringFormat='{0:dd/MM/yyyy}'}" FontSize="12" TextColor="#888" />
-                                <Label Text="•" TextColor="#555" />
-                                <Label Text="{Binding Categoria}" FontSize="12" TextColor="#AC94F4" />
-                            </HorizontalStackLayout>
+                                    <Label Grid.Row="0" Grid.Column="1" 
+                                           Text="{Binding ValorTransacao, StringFormat='{0:C}'}" 
+                                           FontAttributes="Bold" FontSize="18" 
+                                           VerticalOptions="Center"
+                                           TextColor="{Binding TipoMovimento, Converter={StaticResource CorValorConverter}}" />
 
-                            <HorizontalStackLayout Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Spacing="10">
-                                <Frame BackgroundColor="#2C2C2C" CornerRadius="5" Padding="5,2" HasShadow="False">
-                                    <Label Text="{Binding ContaDestino}" FontSize="10" TextColor="#A0A0A0" />
-                                </Frame>
-                                <Frame BackgroundColor="#2C2C2C" CornerRadius="5" Padding="5,2" HasShadow="False">
-                                    <Label Text="{Binding TipoMovimento}" FontSize="10" TextColor="#A0A0A0" />
-                                </Frame>
-                            </HorizontalStackLayout>
+                                    <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="10">
+                                        <Border BackgroundColor="#111318" Stroke="#2C2C2E" StrokeShape="RoundRectangle 6" Padding="8,3">
+                                            <Label Text="{Binding ContaDestino}" FontSize="10" FontAttributes="Bold" TextColor="#8E8E93" TextTransform="Uppercase"/>
+                                        </Border>
+                                        <Border BackgroundColor="#111318" Stroke="#2C2C2E" StrokeShape="RoundRectangle 6" Padding="8,3">
+                                            <Label Text="{Binding TipoMovimento}" FontSize="10" FontAttributes="Bold" TextColor="#8E8E93" TextTransform="Uppercase"/>
+                                        </Border>
+                                    </HorizontalStackLayout>
 
-                        </Grid>
-                    </Frame>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </Grid>
     </Grid>
 </ContentPage>

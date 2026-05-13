@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json;
 using static FinanceUI.Models.UserDTO;
@@ -41,6 +42,25 @@ public class ApiService
         return null;
     }
 
+    // --- MÉTODO PARA EXTRAIR O ID DO TOKEN PARA O TICKET DE SUPORTE ---
+    private string ExtrairIdDoToken(string token)
+    {
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            // Procura pelo claim "idCliente" que vimos no teu token
+            var idClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "idCliente");
+
+            return idClaim?.Value;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     // --- MÉTODO PARA REGISTRO DE UM NOVO CLIENTE ---
     public async Task<(bool Sucesso, string Mensagem)> RegistarAsync(RegistoRequestDTO dados)
     {
@@ -63,6 +83,46 @@ public class ApiService
         catch (Exception ex)
         {
             return (false, $"Erro de ligação: {ex.Message}");
+        }
+    }
+
+    // --- MÉTODO PARA ENVIAR TICKET DE SUPORTE ---
+    public async Task<(bool Sucesso, string Mensagem)> EnviarTicketAsync(string assunto, string mensagem)
+    {
+        try
+        {
+            var token = await SecureStorage.Default.GetAsync("auth_token");
+            if (string.IsNullOrEmpty(token))
+                return (false, "Sessão expirada. Faça login novamente.");
+
+            // Tenta ler do storage, se não houver, extrai do token
+            var idClienteStr = await SecureStorage.Default.GetAsync("user_id");
+            if (string.IsNullOrEmpty(idClienteStr))
+            {
+                idClienteStr = ExtrairIdDoToken(token);
+            }
+
+            if (string.IsNullOrEmpty(idClienteStr))
+                return (false, "Não foi possível identificar o utilizador.");
+
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var dados = new { Assunto = assunto, Mensagem = mensagem };
+            var response = await _httpClient.PostAsJsonAsync($"User/{idClienteStr}/enviar-ticket", dados);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var resultado = await response.Content.ReadFromJsonAsync<RespostasSuporte>();
+                return (true, resultado.mensagem);
+            }
+
+            var erroTexto = await response.Content.ReadAsStringAsync();
+            return (false, erroTexto);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Erro: {ex.Message}");
         }
     }
 
@@ -357,3 +417,6 @@ public class ApiService
 
 // Classes auxiliares para o JSON
 public class TokenResponse { public required string Token { get; set; } }
+
+// Classe auxiliar para o Deserialize (pode por no fim do arquivo ou num folder de Models)
+public class RespostasSuporte { public string mensagem { get; set; } }

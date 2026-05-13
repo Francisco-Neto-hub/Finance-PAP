@@ -7,6 +7,14 @@
     xmlns:views="clr-namespace:FinanceUI.Views"
     Title="FinanceUI">
 
+    <Shell.FlyoutHeader>
+        <VerticalStackLayout BackgroundColor="#141414" Padding="20" Spacing="10">
+            <Image Source="applogo.png" 
+               HeightRequest="80" 
+               HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </Shell.FlyoutHeader>
+
     <FlyoutItem Title="Dashboard" Icon="home_icon.png">
         <ShellContent ContentTemplate="{DataTemplate local:MainPage}" />
     </FlyoutItem>
@@ -29,6 +37,12 @@
 
     <FlyoutItem Title="O Meu Perfil" Icon="user_icon.png">
         <ShellContent ContentTemplate="{DataTemplate views:ProfilePage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Suporte &amp; Tickets" Icon="support_icon.png">
+        <ShellContent 
+            Route="SuportePage"
+            ContentTemplate="{DataTemplate views:SuportePage}" />
     </FlyoutItem>
 
 </Shell>

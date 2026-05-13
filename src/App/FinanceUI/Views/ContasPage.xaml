@@ -2,58 +2,143 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FinanceUI.Views.ContasPage"
-             Title="As Minhas Contas"
-             BackgroundColor="#121212">
+             BackgroundColor="#0F1115">
 
-    <Grid RowDefinitions="Auto, *" Padding="15">
+    <ContentPage.Resources>
+        <Style TargetType="Border">
+            <Setter Property="Stroke" Value="#2C2C2E" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 18" />
+            <Setter Property="Background" Value="#1C1C1E" />
+        </Style>
 
-        <VerticalStackLayout Grid.Row="0" Spacing="10" Margin="0,0,0,15">
-            <Button Text="+ Adicionar Nova Conta" 
-                    Clicked="AoClicarMostrarFormulario" 
-                    BackgroundColor="CornflowerBlue" 
-                    CornerRadius="8" 
-                    HeightRequest="45"/>
+        <Style x:Key="InputIconBorder" TargetType="Border">
+            <Setter Property="Stroke" Value="#2D3748" />
+            <Setter Property="Background" Value="#111318" />
+            <Setter Property="Padding" Value="12,4" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        </Style>
+    </ContentPage.Resources>
 
-            <Frame x:Name="FormNovaConta" IsVisible="False" BorderColor="LightGray" CornerRadius="8" Padding="15">
-                <VerticalStackLayout Spacing="10">
-                    <Entry x:Name="NomeContaEntry" Placeholder="Nome da Conta (ex: Poupança)" />
-                    <Entry x:Name="SaldoInicialEntry" Placeholder="Saldo Inicial (ex: 100.00)" Keyboard="Numeric" />
+    <Grid ColumnDefinitions="280,*" RowDefinitions="*">
 
-                    <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
-                        <Button Grid.Column="0" Text="Cancelar" BackgroundColor="LightGray" TextColor="Black" Clicked="AoClicarCancelar"/>
-                        <Button Grid.Column="1" Text="Guardar" BackgroundColor="MediumSeaGreen" Clicked="AoClicarGuardarConta"/>
-                    </Grid>
-                </VerticalStackLayout>
-            </Frame>
-        </VerticalStackLayout>
+        <Grid Grid.Column="0" BackgroundColor="#070B10" />
 
-        <RefreshView Grid.Row="1" x:Name="RefreshContas" Refreshing="AoAtualizarLista">
-            <CollectionView x:Name="ListaContas" EmptyView="Não tens contas abertas.">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <SwipeView>
-                            <SwipeView.RightItems>
-                                <SwipeItems>
-                                    <SwipeItem Text="Fechar Conta" 
-                                               IconImageSource="delete_icon.png" 
-                                               BackgroundColor="IndianRed" 
-                                               Invoked="AoFazerSwipeFechar"
-                                               CommandParameter="{Binding .}"/>
-                                </SwipeItems>
-                            </SwipeView.RightItems>
+        <Grid Grid.Column="1" RowDefinitions="Auto,*" Padding="30,25">
 
-                            <Frame Margin="0,5" Padding="20" BorderColor="LightGray" CornerRadius="10" HasShadow="True">
-                                <Grid ColumnDefinitions="*, Auto">
-                                    <Label Grid.Column="0" Text="{Binding NomeConta}" FontAttributes="Bold" FontSize="18" VerticalOptions="Center"/>
+            <VerticalStackLayout Grid.Row="0" Spacing="20" Margin="0,0,0,20">
 
-                                    <Label Grid.Column="1" Text="{Binding MontanteFormatado}" FontSize="18" TextColor="CornflowerBlue" FontAttributes="Bold" VerticalOptions="Center"/>
-                                </Grid>
-                            </Frame>
-                        </SwipeView>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </RefreshView>
+                <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                        <Label Text="As Minhas Contas" FontSize="28" FontAttributes="Bold" TextColor="White"/>
+                        <Label Text="Gerir saldos e contas bancárias" FontSize="14" TextColor="#8E8E93"/>
+                    </VerticalStackLayout>
 
+                    <Button Grid.Column="1"
+                            Text="+ Nova Conta"
+                            Clicked="AoClicarMostrarFormulario"
+                            BackgroundColor="#2563EB"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            HeightRequest="45"
+                            Padding="20,0"
+                            CornerRadius="10"/>
+                </Grid>
+
+                <Border x:Name="FormNovaConta"
+                        IsVisible="False"
+                        Padding="20"
+                        Stroke="#3A3F4B">
+
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="ADICIONAR NOVA CONTA" FontSize="14" FontAttributes="Bold" TextColor="#2563EB" Margin="0,0,0,5"/>
+
+                        <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+                            <VerticalStackLayout Grid.Column="0" Spacing="5">
+                                <Label Text="Nome da Conta" FontSize="12" TextColor="#8E8E93" />
+                                <Border Style="{StaticResource InputIconBorder}">
+                                    <Entry x:Name="NomeContaEntry" 
+                                           Placeholder="Ex: Caixa Geral" 
+                                           PlaceholderColor="#48484A" 
+                                           TextColor="White"/>
+                                </Border>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="1" Spacing="5">
+                                <Label Text="Saldo Inicial (€)" FontSize="12" TextColor="#8E8E93" />
+                                <Border Style="{StaticResource InputIconBorder}">
+                                    <Entry x:Name="SaldoInicialEntry" 
+                                           Placeholder="0.00" 
+                                           Keyboard="Numeric"
+                                           PlaceholderColor="#48484A" 
+                                           TextColor="White"/>
+                                </Border>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto, Auto" ColumnSpacing="12" HorizontalOptions="End">
+                            <Button Grid.Column="0" Text="Cancelar" Clicked="AoClicarCancelar" 
+                                    BackgroundColor="Transparent" TextColor="#EF4444" BorderColor="#EF4444" 
+                                    BorderWidth="1" CornerRadius="8" HeightRequest="40" Padding="20,0"/>
+
+                            <Button Grid.Column="1" Text="Guardar Conta" Clicked="AoClicarGuardarConta" 
+                                    BackgroundColor="#10B981" TextColor="White" FontAttributes="Bold" 
+                                    CornerRadius="8" HeightRequest="40" Padding="20,0"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+
+            <RefreshView Grid.Row="1" x:Name="RefreshContas" Refreshing="AoAtualizarLista" RefreshColor="#2563EB">
+
+                <CollectionView x:Name="ListaContas" SelectionMode="None">
+
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="15" Margin="0,50">
+                            <Label Text="💳" FontSize="60" HorizontalTextAlignment="Center"/>
+                            <Label Text="Nenhuma conta encontrada" FontSize="18" FontAttributes="Bold" TextColor="White" HorizontalTextAlignment="Center"/>
+                            <Label Text="Clique em '+ Nova Conta' para começar" FontSize="14" TextColor="#8E8E93" HorizontalTextAlignment="Center"/>
+                        </VerticalStackLayout>
+                    </CollectionView.EmptyView>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <SwipeView>
+                                <SwipeView.RightItems>
+                                    <SwipeItems Mode="Reveal">
+                                        <SwipeItem Text="Eliminar" BackgroundColor="#DC2626" 
+                                                   Invoked="AoFazerSwipeFechar" CommandParameter="{Binding .}"/>
+                                    </SwipeItems>
+                                </SwipeView.RightItems>
+
+                                <Border Margin="0,0,0,12" Padding="16" Stroke="#2C2C2E">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="15">
+
+                                        <Border Grid.Column="0" WidthRequest="48" HeightRequest="48" 
+                                                BackgroundColor="#2563EB" StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 24" VerticalOptions="Center">
+                                            <Label Text="🏦" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Border>
+
+                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                            <Label Text="{Binding NomeConta}" FontSize="17" FontAttributes="Bold" TextColor="White"/>
+                                            <Label Text="Conta Corrente" FontSize="12" TextColor="#8E8E93"/>
+                                        </VerticalStackLayout>
+
+                                        <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" HorizontalOptions="End">
+                                            <Label Text="{Binding MontanteFormatado}" FontSize="19" FontAttributes="Bold" TextColor="#60A5FA" HorizontalTextAlignment="End"/>
+                                            <Label Text="Disponível" FontSize="11" TextColor="#4ADE80" HorizontalTextAlignment="End"/>
+                                        </VerticalStackLayout>
+
+                                    </Grid>
+                                </Border>
+                            </SwipeView>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+
+                </CollectionView>
+            </RefreshView>
+
+        </Grid>
     </Grid>
 </ContentPage>

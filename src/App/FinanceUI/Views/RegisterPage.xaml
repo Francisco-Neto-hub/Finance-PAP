@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FinanceUI.Views.RegisterPage"
              Title="Criar Conta"
-             BackgroundColor="#121212">
+             BackgroundColor="#0F1115">
 
     <ScrollView>
         <VerticalStackLayout Spacing="15" Padding="30" VerticalOptions="Center">

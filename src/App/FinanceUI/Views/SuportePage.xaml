@@ -1,0 +1,44 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FinanceUI.Views.SuportePage"
+             BackgroundColor="#0b0b0b"
+             Title="Suporte Técnico">
+
+    <VerticalStackLayout Padding="25" Spacing="15">
+        <Label Text="Como podemos ajudar?" 
+               TextColor="#00C2FF" 
+               FontSize="22" FontAttributes="Bold" />
+
+        <Label Text="Descreva o seu problema ou dúvida abaixo." 
+               TextColor="Gray" FontSize="14" Margin="0,0,0,10"/>
+
+        <Border Stroke="#262626" StrokeThickness="1" BackgroundColor="#141414" Padding="5">
+            <Entry x:Name="txtAssunto" 
+                   Placeholder="Assunto (ex: Erro no Saldo)" 
+                   PlaceholderColor="#666"
+                   TextColor="White"/>
+        </Border>
+
+        <Border Stroke="#262626" StrokeThickness="1" BackgroundColor="#141414" Padding="5">
+            <Editor x:Name="txtMensagem" 
+                    Placeholder="Escreva aqui a sua mensagem..." 
+                    PlaceholderColor="#666"
+                    TextColor="White"
+                    HeightRequest="180" />
+        </Border>
+
+        <Button x:Name="btnEnviar"
+                Text="ENVIAR TICKET"
+                BackgroundColor="#00C2FF"
+                TextColor="Black"
+                FontAttributes="Bold"
+                HeightRequest="50"
+                CornerRadius="8"
+                Clicked="OnEnviarTicketClicked" />
+
+        <ActivityIndicator x:Name="indicator" 
+                           IsRunning="False" 
+                           Color="#00C2FF" 
+                           HorizontalOptions="Center" />
+    </VerticalStackLayout>
+</ContentPage>

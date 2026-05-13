@@ -72,11 +72,15 @@ const Tickets = () => {
               <p className="ticket-msg">"{t.mensagem}"</p>
               
               <div className="ticket-footer">
-                <span>ID Cliente: #{t.idCliente}</span>
+                <div>
+                  <strong>{t.nomeCliente}</strong> <br/>
+                  <span style={{fontSize: '0.7rem'}}>{new Date(t.dataCriacao).toLocaleDateString()}</span>
+                </div>
+    
                 {!t.isResolvido && (
-                  <button onClick={() => marcarComoResolvido(t.idTicket)} className="btn-resolve">
-                    Marcar como Resolvido
-                  </button>
+                <button onClick={() => marcarComoResolvido(t.idTicket)} className="btn-resolve">
+                  Marcar Resolvido
+                </button>
                 )}
               </div>
             </div>

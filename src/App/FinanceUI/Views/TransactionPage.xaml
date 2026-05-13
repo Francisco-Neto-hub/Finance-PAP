@@ -2,108 +2,155 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FinanceUI.Views.TransactionPage"
-             Title="Nova Transação"
-             BackgroundColor="#121212">
+             BackgroundColor="#0F1115">
 
-    <ScrollView>
-        <VerticalStackLayout Spacing="20" Padding="30">
+    <ContentPage.Resources>
+        <Style TargetType="Border">
+            <Setter Property="Stroke" Value="#2C2C2E" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+            <Setter Property="Background" Value="#1C1C1E" />
+            <Setter Property="Padding" Value="12,4" />
+        </Style>
 
-            <Label Text="Registar Movimento" 
-                   FontSize="24" 
-                   FontAttributes="Bold" 
-                   HorizontalOptions="Center" />
+        <Style TargetType="Label">
+            <Setter Property="TextColor" Value="#8E8E93" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Margin" Value="5,0,0,2" />
+        </Style>
 
-            <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+        <Style TargetType="RadioButton">
+            <Setter Property="TextColor" Value="White" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+    </ContentPage.Resources>
 
-                <VerticalStackLayout Grid.Column="0" Spacing="5">
-                    <Label Text="Tipo" FontAttributes="Bold" />
-                    <Frame BorderColor="LightGray" Padding="5" CornerRadius="10" HasShadow="False">
-                        <VerticalStackLayout>
-                            <RadioButton x:Name="RadioReceita" Content="Receita" IsChecked="True" FontSize="14" CheckedChanged="OnTipoCambiado" />
-                            <RadioButton x:Name="RadioDespesa" Content="Despesa" FontSize="14" CheckedChanged="OnTipoCambiado" />
-                            <RadioButton x:Name="RadioTransferencia" Content="Transferência" FontSize="14" CheckedChanged="OnTipoCambiado" />
-                        </VerticalStackLayout>
-                    </Frame>
-                </VerticalStackLayout>
+    <Grid ColumnDefinitions="280,*" RowDefinitions="Auto,*">
 
-                <VerticalStackLayout Grid.Column="1" Spacing="5">
-                    <Label Text="Conta *" FontAttributes="Bold" />
-                    <Frame BorderColor="LightGray" Padding="0" CornerRadius="10" HasShadow="False">
-                        <Picker x:Name="ContaPicker" 
-                                Title="Escolha..." 
-                                ItemDisplayBinding="{Binding NomeConta}"
-                                HeightRequest="85"
-                                VerticalOptions="Center" />
-                    </Frame>
+        <Grid Grid.RowSpan="2"
+              Grid.Column="0"
+              BackgroundColor="#070B10" />
 
-                    <VerticalStackLayout x:Name="LayoutContaDestino" Spacing="5" IsVisible="False">
-                        <Label Text="Conta Destino *" FontAttributes="Bold" />
-                        <Frame BorderColor="LightGray" Padding="0" CornerRadius="10" HasShadow="False">
-                            <Picker x:Name="ContaDestinoPicker" ItemDisplayBinding="{Binding NomeConta}" Title="Selecione o destino" Margin="10,0" />
-                        </Frame>
+        <ScrollView Grid.Column="1"
+                    Grid.RowSpan="2"
+                    Orientation="Vertical">
+
+            <Grid Padding="25,30,25,25"
+                  MaximumWidthRequest="800" 
+                  HorizontalOptions="Center">
+
+                <VerticalStackLayout Spacing="20">
+
+                    <Label Text="NOVA TRANSAÇÃO" 
+                           TextColor="White" 
+                           FontSize="22" 
+                           FontAttributes="Bold" 
+                           Margin="0,0,0,10" />
+
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="TIPO DE TRANSAÇÃO" FontAttributes="Bold" />
+                        <Border Padding="15">
+                            <FlexLayout Direction="Row" JustifyContent="SpaceBetween" AlignItems="Center">
+                                <RadioButton x:Name="RadioReceita" Content="Receita" IsChecked="True" CheckedChanged="OnTipoCambiado" />
+                                <RadioButton x:Name="RadioDespesa" Content="Despesa" CheckedChanged="OnTipoCambiado" />
+                                <RadioButton x:Name="RadioTransferencia" Content="Transf." CheckedChanged="OnTipoCambiado" />
+                            </FlexLayout>
+                        </Border>
                     </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="VALOR (€)" FontAttributes="Bold" TextColor="#512BD4" />
+                        <Border Stroke="#512BD4" StrokeThickness="2">
+                            <Entry x:Name="ValorEntry" 
+                                   Placeholder="0.00" 
+                                   PlaceholderColor="#48484A"
+                                   Keyboard="Numeric" 
+                                   FontSize="24" 
+                                   TextColor="White"
+                                   FontAttributes="Bold" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+                        <VerticalStackLayout Grid.Column="0" Spacing="5">
+                            <Label Text="CONTA *" FontAttributes="Bold" />
+                            <Border>
+                                <Picker x:Name="ContaPicker" 
+                                        Title="Origem" 
+                                        TextColor="White"
+                                        TitleColor="#48484A"
+                                        ItemDisplayBinding="{Binding NomeConta}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="1" x:Name="LayoutContaDestino" Spacing="5" IsVisible="False">
+                            <Label Text="DESTINO *" FontAttributes="Bold" />
+                            <Border>
+                                <Picker x:Name="ContaDestinoPicker" 
+                                        Title="Destino" 
+                                        TextColor="White"
+                                        TitleColor="#48484A"
+                                        ItemDisplayBinding="{Binding NomeConta}" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="DESCRIÇÃO" FontAttributes="Bold" />
+                        <Border>
+                            <Entry x:Name="DescricaoEntry" 
+                                   TextColor="White"
+                                   PlaceholderColor="#48484A"
+                                   Placeholder="Ex: Salário, Restaurante..." />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+                        <VerticalStackLayout Grid.Column="0" Spacing="5">
+                            <Label Text="CATEGORIA" FontAttributes="Bold" />
+                            <Border>
+                                <Picker x:Name="CategoriaPicker" Title="Selecione" TextColor="White" TitleColor="#48484A">
+                                    <Picker.ItemsSource>
+                                        <x:Array Type="{x:Type x:String}">
+                                            <x:String>Alimentação</x:String>
+                                            <x:String>Lazer</x:String>
+                                            <x:String>Transportes</x:String>
+                                            <x:String>Salário</x:String>
+                                            <x:String>Saúde</x:String>
+                                            <x:String>Outros</x:String>
+                                        </x:Array>
+                                    </Picker.ItemsSource>
+                                </Picker>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="1" Spacing="5">
+                            <Label Text="DATA" FontAttributes="Bold" />
+                            <Border>
+                                <DatePicker x:Name="DataPicker" 
+                                            Format="dd/MM/yyyy" 
+                                            TextColor="White" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Button x:Name="BtnGuardar" 
+                            Text="GUARDAR REGISTO" 
+                            Clicked="AoClicarGuardar" 
+                            BackgroundColor="#512BD4"
+                            TextColor="White"
+                            HeightRequest="55" 
+                            CornerRadius="12"
+                            FontAttributes="Bold"
+                            Margin="0,15,0,0" />
+
+                    <ActivityIndicator x:Name="Indicador" 
+                                       IsRunning="False" 
+                                       Color="#512BD4" 
+                                       HorizontalOptions="Center" />
+
                 </VerticalStackLayout>
-
             </Grid>
-
-            <VerticalStackLayout Spacing="5">
-                <Label Text="Valor (€)" FontAttributes="Bold" />
-                <Frame BorderColor="LightGray" Padding="5" CornerRadius="10" HasShadow="False">
-                    <Entry x:Name="ValorEntry" 
-                           Placeholder="0.00" 
-                           Keyboard="Numeric" 
-                           FontSize="20" 
-                           HorizontalTextAlignment="Center" />
-                </Frame>
-            </VerticalStackLayout>
-
-            <VerticalStackLayout Spacing="5">
-                <Label Text="Descrição" FontAttributes="Bold" />
-                <Frame BorderColor="LightGray" Padding="5" CornerRadius="10" HasShadow="False">
-                    <Entry x:Name="DescricaoEntry" 
-                           Placeholder="Ex: Salário, Jantar, etc." />
-                </Frame>
-            </VerticalStackLayout>
-
-            <VerticalStackLayout Spacing="5">
-                <Label Text="Categoria" FontAttributes="Bold" />
-                <Frame BorderColor="LightGray" Padding="0" CornerRadius="10" HasShadow="False">
-                    <Picker x:Name="CategoriaPicker" Title="Selecione a categoria">
-                        <Picker.ItemsSource>
-                            <x:Array Type="{x:Type x:String}">
-                                <x:String>Alimentação</x:String>
-                                <x:String>Lazer</x:String>
-                                <x:String>Transportes</x:String>
-                                <x:String>Salário</x:String>
-                                <x:String>Saúde</x:String>
-                                <x:String>Outros</x:String>
-                            </x:Array>
-                        </Picker.ItemsSource>
-                    </Picker>
-                </Frame>
-            </VerticalStackLayout>
-
-            <VerticalStackLayout Spacing="5">
-                <Label Text="Data" FontAttributes="Bold" />
-                <Frame BorderColor="LightGray" Padding="0" CornerRadius="10" HasShadow="False">
-                    <DatePicker x:Name="DataPicker" Format="dd/MM/yyyy" Margin="10,0" />
-                </Frame>
-            </VerticalStackLayout>
-
-            <Button x:Name="BtnGuardar" 
-                    Text="GUARDAR" 
-                    Clicked="AoClicarGuardar" 
-                    BackgroundColor="#512BD4"
-                    TextColor="White"
-                    HeightRequest="60" 
-                    FontAttributes="Bold"
-                    Margin="0,10,0,0" />
-
-            <ActivityIndicator x:Name="Indicador" 
-                               IsRunning="False" 
-                               Color="#512BD4" 
-                               HorizontalOptions="Center" />
-
-        </VerticalStackLayout>
-    </ScrollView>
+        </ScrollView>
+    </Grid>
 </ContentPage>
