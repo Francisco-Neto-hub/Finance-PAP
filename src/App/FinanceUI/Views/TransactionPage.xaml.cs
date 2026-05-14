@@ -1,5 +1,7 @@
 using FinanceUI.Models;
+using FinanceUI.Services;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace FinanceUI.Views;
 
@@ -7,169 +9,170 @@ public partial class TransactionPage : ContentPage
 {
     private readonly ApiService _apiService;
     private List<ContaDTO> _contas;
+    private bool _isBusy;
 
-    // O construtor recebe o ApiService via Injeção de Dependência conforme configurado no MauiProgram
     public TransactionPage(ApiService apiService)
     {
         InitializeComponent();
         _apiService = apiService;
     }
 
-    // Método executado sempre que a página aparece no ecrã
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         await CarregarContasNoPicker();
     }
+
     private async Task CarregarContasNoPicker()
     {
         try
         {
-            // 1. Puxa as contas do utilizador através do serviço
             _contas = await _apiService.GetContasAsync();
 
             if (_contas != null && _contas.Count > 0)
             {
-                // 2. Preenche o picker de Origem
                 ContaPicker.ItemsSource = _contas;
-                
-                // 3. ADICIONA ESTA LINHA: Preenche também o picker de Destino
-                ContaDestinoPicker.ItemsSource = _contas;
+                // Verificação de segurança caso o picker de destino ainda não exista na UI
+                if (ContaDestinoPicker != null)
+                    ContaDestinoPicker.ItemsSource = _contas;
             }
             else
             {
-                await DisplayAlertAsync("Aviso", "Não foram encontradas contas. Crie uma conta primeiro.", "OK");
+                await DisplayAlertAsync("Aviso", "Nenhuma conta encontrada. Configure as suas contas primeiro.", "OK");
             }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Erro ao carregar contas: {ex.Message}");
+            Debug.WriteLine($"[Transaction Error]: {ex.Message}");
         }
     }
 
-    // 1. Controlar a visibilidade do campo de destino
     private void OnTipoCambiado(object sender, CheckedChangedEventArgs e)
     {
-        if (LayoutContaDestino != null)
+        // Só executa se o evento for o "Marcado" (Checked = true)
+        if (e.Value && LayoutContaDestino != null)
+        {
             LayoutContaDestino.IsVisible = RadioTransferencia.IsChecked;
+        }
     }
 
     private async void AoClicarGuardar(object sender, EventArgs e)
     {
-        // 1. Validações Iniciais
+        if (_isBusy) return;
+
+        // 1. Validações de Seleção
         if (ContaPicker.SelectedIndex == -1)
         {
-            await DisplayAlertAsync("Campo Obrigatório", "Por favor, selecione a conta.", "OK");
+            await DisplayAlertAsync("Campo Obrigatório", "Selecione a conta de origem.", "OK");
             return;
         }
 
-        // Validação extra se for transferência: precisa de conta de destino
-        // (Certifica-te que já criaste o 'RadioTransferencia' e o 'ContaDestinoPicker' no XAML)
-        if (RadioTransferencia.IsChecked && ContaDestinoPicker.SelectedIndex == -1)
+        if (RadioTransferencia.IsChecked)
         {
-            await DisplayAlertAsync("Campo Obrigatório", "Por favor, selecione a conta de destino para a transferência.", "OK");
+            if (ContaDestinoPicker.SelectedIndex == -1)
+            {
+                await DisplayAlertAsync("Campo Obrigatório", "Selecione a conta de destino.", "OK");
+                return;
+            }
+
+            if (ContaPicker.SelectedItem == ContaDestinoPicker.SelectedItem)
+            {
+                await DisplayAlertAsync("Erro", "A conta de origem e destino não podem ser iguais.", "OK");
+                return;
+            }
+        }
+
+        if (CategoriaPicker.SelectedIndex == -1)
+        {
+            await DisplayAlertAsync("Erro", "Selecione uma categoria.", "OK");
             return;
         }
 
-        if (RadioTransferencia.IsChecked && ContaPicker.SelectedItem == ContaDestinoPicker.SelectedItem)
+        // 2. Validação de Valor (Tratamento de vírgulas/pontos)
+        string valorTexto = ValorEntry.Text?.Replace(',', '.') ?? "0";
+        if (!decimal.TryParse(valorTexto, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal valorDigitado) || valorDigitado <= 0)
         {
-            await DisplayAlertAsync("Erro", "A conta de origem e destino não podem ser a mesma.", "OK");
+            await DisplayAlertAsync("Erro", "Insira um valor válido superior a zero.", "OK");
             return;
         }
-
-        if (string.IsNullOrWhiteSpace(ValorEntry.Text) || CategoriaPicker.SelectedIndex == -1)
-        {
-            await DisplayAlertAsync("Erro", "Preencha o valor e a categoria!", "OK");
-            return;
-        }
-
-        if (!decimal.TryParse(ValorEntry.Text, out decimal valorDigitado))
-        {
-            await DisplayAlertAsync("Erro", "O valor inserido é inválido!", "OK");
-            return;
-        }
-
-        // 2. UI Feedback
-        Indicador.IsRunning = true;
-        BtnGuardar.IsEnabled = false;
-
-        // Obtemos a conta selecionada
-        var contaSelecionada = (ContaDTO)ContaPicker.SelectedItem;
-
-        // --- LÓGICA DE TRADUÇÃO PARA A API ---
-
-        // A. Traduzir Categoria (Texto do Picker -> ID da Base de Dados)
-        // Nota: Certifica-te que estes IDs batem certo com a tua tabela 'Categoria'
-        string? categoriaNome = CategoriaPicker.SelectedItem?.ToString();
-        int idCat = 1002; // Valor padrão: 1002 (Outros)
-
-        switch (categoriaNome)
-        {
-            case "Salário": idCat = 1; break;
-            case "Alimentação": idCat = 2; break;
-            case "Transporte": idCat = 3; break;
-            case "Lazer": idCat = 4; break;
-            case "Saúde": idCat = 5; break;
-            case "Habitação": idCat = 6; break;
-            case "Outros": idCat = 1002; break;
-        }
-
-        // B. Traduzir Tipo de Movimento (1 = Receita, 2 = Despesa, 3 = Transferência)
-        int tipoId = RadioReceita.IsChecked ? 1 : (RadioDespesa.IsChecked ? 2 : 3);
-
-        // C. RESOLVER A HORA: Juntar a data escolhida no Picker com a hora exata atual do sistema
-        DateTime dataSelecionada = DataPicker.Date ?? DateTime.Now;
-        TimeSpan horaAtual = DateTime.Now.TimeOfDay;
-        DateTime dataFinalComHora = dataSelecionada.Add(horaAtual);
-
-        // 3. Preparar os dados (TransacaoRequest) alinhados com o Backend
-        var dados = new TransacaoRequestDTO
-        {
-            NomeTransacao = DescricaoEntry.Text,
-            ValorTransacao = valorDigitado,     // Vai sempre positivo (a API trata do resto)
-            IdCategoria = idCat,                // Agora enviamos o ID numérico
-            DataTransacao = dataFinalComHora,   // Agora vai com a hora real (ex: 15:30) em vez de 00:00!
-            IdContaOrigem = contaSelecionada.Id,// Nome corrigido para bater com a API
-            IdTipo = tipoId,                     // Enviamos 1 ou 2 em vez de texto
-            // Só tenta ler a conta de destino se for uma transferência
-            IdContaDestino = RadioTransferencia.IsChecked ? ((ContaDTO)ContaDestinoPicker.SelectedItem).Id : null
-        };
 
         try
         {
-            // 4. Chamada real à API
+            _isBusy = true;
+            Indicador.IsRunning = true;
+            BtnGuardar.IsEnabled = false;
+
+            string categoriaNome = CategoriaPicker.SelectedItem?.ToString() ?? "Outros";
+
+            // 3. Preparação dos Dados
+            var contaOrigem = (ContaDTO)ContaPicker.SelectedItem;
+
+            // Mapeamento de Categoria (Melhorado com fallback)
+            int idCat = MapearCategoriaParaId(categoriaNome);
+
+            // Determinar Tipo (1: Receita, 2: Despesa, 3: Transferência)
+            int tipoId = RadioReceita.IsChecked ? 1 : (RadioDespesa.IsChecked ? 2 : 3);
+
+            // Ajuste de Data e Hora
+            // Garantimos que pegamos a data do picker (ou a de hoje se falhar) 
+            // e somamos a hora atual para o registo ficar preciso.
+            DateTime dataDoPicker = (DateTime)DataPicker.Date; // O DatePicker do MAUI normalmente já é DateTime, não nullable
+            DateTime dataFinalComHora = dataDoPicker.Add(DateTime.Now.TimeOfDay);
+
+            var dados = new TransacaoRequestDTO
+            {
+                NomeTransacao = string.IsNullOrWhiteSpace(DescricaoEntry.Text) ? categoriaNome : DescricaoEntry.Text.Trim(),
+                ValorTransacao = valorDigitado,
+                IdCategoria = idCat,
+                DataTransacao = dataFinalComHora,                
+                IdContaOrigem = contaOrigem.Id,
+                IdTipo = tipoId,
+                IdContaDestino = RadioTransferencia.IsChecked ? ((ContaDTO)ContaDestinoPicker.SelectedItem).Id : null
+            };
+
+            // 4. Enviar para API
             bool sucesso = await _apiService.PostTransacaoAsync(dados);
 
             if (sucesso)
             {
-                await DisplayAlertAsync("Sucesso", "Transação registada com sucesso!", "OK");
-                
-                // 5. Limpar os campos para permitir registar logo outro movimento
+                await DisplayAlertAsync("Sucesso ✨", "Movimento registado!", "OK");
                 LimparCampos();
 
-                // Comentei o PopAsync para a página não fechar automaticamente. 
-                // Assim o utilizador pode registar várias coisas seguidas.
+                // Opcional: Voltar para a Dashboard automaticamente
                 // await Navigation.PopAsync();
             }
             else
             {
-                // Se der erro, a API provavelmente enviou uma mensagem (Saldo ou Conta)
-                await DisplayAlertAsync("Erro", "A transação foi recusada pela API. Verifique os dados ou o saldo.", "OK");
+                await DisplayAlertAsync("Erro", "A API recusou a transação. Verifique se tem saldo suficiente.", "OK");
             }
         }
         catch (Exception ex)
         {
-            await DisplayAlertAsync("Erro Crítico", $"Erro de ligação: {ex.Message}", "OK");
+            await DisplayAlertAsync("Erro Crítico", "Falha na ligação com o servidor.", "OK");
+            Debug.WriteLine(ex.Message);
         }
         finally
         {
-            // 5. Restaurar a UI
+            _isBusy = false;
             Indicador.IsRunning = false;
             BtnGuardar.IsEnabled = true;
         }
     }
 
-    // NOVO MÉTODO PARA LIMPAR A UI
+    private int MapearCategoriaParaId(string categoriaNome)
+    {
+        return categoriaNome switch
+        {
+            "Salário" => 1,
+            "Alimentação" => 2,
+            "Transporte" => 3,
+            "Lazer" => 4,
+            "Saúde" => 5,
+            "Habitação" => 6,
+            _ => 1002 // Categoria "Outros" ou padrão
+        };
+    }
+
     private void LimparCampos()
     {
         DescricaoEntry.Text = string.Empty;
@@ -177,10 +180,10 @@ public partial class TransactionPage : ContentPage
         CategoriaPicker.SelectedIndex = -1;
         ContaPicker.SelectedIndex = -1;
 
-        // Se já tens o picker de destino na UI, limpamos também:
-        if (ContaDestinoPicker != null) ContaDestinoPicker.SelectedIndex = -1;
+        if (ContaDestinoPicker != null)
+            ContaDestinoPicker.SelectedIndex = -1;
 
         DataPicker.Date = DateTime.Now;
-        RadioReceita.IsChecked = true; // Faz reset do tipo de movimento para "Receita"
+        RadioDespesa.IsChecked = true; // Geralmente as pessoas registam mais despesas
     }
 }

@@ -9,76 +9,188 @@ using static FinanceUI.Models.UserDTO;
 using static FinanceUI.Models.GraficosDTO;
 using static FinanceUI.Models.RelatoriosDTO;
 
+namespace FinanceUI.Services; // Adicionado namespace para organização
 
 public class ApiService
 {
     private readonly HttpClient _httpClient;
-    private string BaseUrl = DeviceInfo.Platform == DevicePlatform.Android ? "https://10.0.2.2:7221/api/" : "https://localhost:7221/api/";
+
+    // Simplificação da URL Base
+    private static string BaseUrl = DeviceInfo.Platform == DevicePlatform.Android
+        ? "https://10.0.2.2:7221/api/"
+        : "https://localhost:7221/api/";
 
     public ApiService()
     {
-        _httpClient = new HttpClient { BaseAddress = new Uri(BaseUrl) };
+        // Configuração de segurança para certificados auto-assinados (comum em dev local)
+        var handler = new HttpClientHandler();
+        handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+
+        _httpClient = new HttpClient(handler) { BaseAddress = new Uri(BaseUrl) };
     }
 
-    // --- MÉTODO DE LOGIN ---
-    public async Task<string> LoginAsync(string email, string password)
+    // --- MÉTODOS AUXILIARES (INTERNOS) ---
+
+    /// <summary>
+    /// Garante que o Token atual do SecureStorage está no cabeçalho antes de cada pedido.
+    /// </summary>
+    private async Task PrepararCabecalhoAuth()
     {
-        var response = await _httpClient.PostAsJsonAsync("Auth/login", new { Email = email, Password = password });
-
-        if (response.IsSuccessStatusCode)
+        var token = await SecureStorage.Default.GetAsync("auth_token");
+        if (!string.IsNullOrEmpty(token))
         {
-            var result = await response.Content.ReadFromJsonAsync<TokenResponse>();
-            var token = result?.Token;
-
-            if (!string.IsNullOrEmpty(token))
-            {
-                // CONFIGURA O TOKEN NO HTTPCLIENT AQUI!
-                _httpClient.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", token);
-            }
-
-            return token;
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
-        return null;
     }
 
-    // --- MÉTODO PARA EXTRAIR O ID DO TOKEN PARA O TICKET DE SUPORTE ---
     private string ExtrairIdDoToken(string token)
     {
         try
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);
-
-            // Procura pelo claim "idCliente" que vimos no teu token
-            var idClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "idCliente");
-
+            var idClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "idCliente" || c.Type == "sub");
             return idClaim?.Value;
         }
-        catch
-        {
-            return null;
-        }
+        catch { return null; }
     }
 
-    // --- MÉTODO PARA REGISTRO DE UM NOVO CLIENTE ---
+    // --- AUTENTICAÇÃO ---
+
+    public async Task<string> LoginAsync(string email, string password)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("Auth/login", new { Email = email, Password = password });
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<TokenResponse>();
+                if (result?.Token != null)
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
+                    return result.Token;
+                }
+            }
+            return null;
+        }
+        catch (Exception ex) { Debug.WriteLine($"Erro Login: {ex.Message}"); return null; }
+    }
+
     public async Task<(bool Sucesso, string Mensagem)> RegistarAsync(RegistoRequestDTO dados)
     {
         try
         {
             var response = await _httpClient.PostAsJsonAsync("Auth/registar", dados);
+            var conteudo = await response.Content.ReadAsStringAsync();
+
+            return response.IsSuccessStatusCode
+                ? (true, "Conta criada com sucesso!")
+                : (false, conteudo);
+        }
+        catch (Exception ex) { return (false, $"Erro de ligação: {ex.Message}"); }
+    }
+
+    // --- UTILIZADOR E PERFIL ---
+
+    public async Task<UserUpdateDTO> ObterPerfilAsync()
+    {
+        try
+        {
+            await PrepararCabecalhoAuth();
+            return await _httpClient.GetFromJsonAsync<UserUpdateDTO>("User/perfil");
+        }
+        catch { return null; }
+    }
+
+    public async Task<(bool Sucesso, string Mensagem)> AtualizarPerfilAsync(string nome, string email, string telemovel, DateTime dataNasc)
+    {
+        try
+        {
+            await PrepararCabecalhoAuth();
+            var dados = new { Nome = nome, Email = email, Telemovel = telemovel, DataNasc = dataNasc };
+            var response = await _httpClient.PutAsJsonAsync("User/atualizar-perfil", dados);
+
+            return response.IsSuccessStatusCode
+                ? (true, "Perfil atualizado!")
+                : (false, await response.Content.ReadAsStringAsync());
+        }
+        catch (Exception ex) { return (false, ex.Message); }
+    }
+
+    public async Task<(bool Sucesso, string Mensagem)> MudarPasswordAsync(string antiga, string nova)
+    {
+        try
+        {
+            await PrepararCabecalhoAuth();
+            var response = await _httpClient.PutAsJsonAsync("User/mudar-password", new { PasswordAntiga = antiga, PasswordNova = nova });
+
+            return response.IsSuccessStatusCode
+                ? (true, "Password alterada!")
+                : (false, "A password antiga está incorreta.");
+        }
+        catch { return (false, "Erro ao mudar password."); }
+    }
+
+    // --- MÉTODO PARA A RECUPERAÇÃO DA PASSWORD ---
+    public async Task<(bool Sucesso, string Mensagem)> RecuperarPasswordAsync(string email, string telemovel, string novaPassword)
+    {
+        try
+        {
+            // Nota: Aqui não chamamos PrepararCabecalhoAuth() porque o utilizador não está logado
+            var dados = new { Email = email, Telemovel = telemovel, NovaPassword = novaPassword };
+
+            var response = await _httpClient.PostAsJsonAsync("User/recuperar-password", dados);
 
             if (response.IsSuccessStatusCode)
-            {
-                return (true, "Conta criada com sucesso!");
-            }
-            else
-            {
-                // Tenta ler a mensagem de erro da API (ex: "Este email já está registado")
-                var conteudo = await response.Content.ReadAsStringAsync();
-                // Se a API devolve um objeto JSON { "mensagem": "..." }, podes extrair aqui
-                return (false, conteudo);
-            }
+                return (true, "Password recuperada com sucesso!");
+
+            var erro = await response.Content.ReadAsStringAsync();
+            return (false, erro);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Erro de rede: {ex.Message}");
+        }
+    }
+
+    // --- DASHBOARD E CONTAS ---
+
+    public async Task<DashboardResumo> GetResumoDashboardAsync()
+    {
+        try
+        {
+            await PrepararCabecalhoAuth();
+            return await _httpClient.GetFromJsonAsync<DashboardResumo>("Dashboard/resumo");
+        }
+        catch { return null; }
+    }
+
+    public async Task<List<ContaDTO>> GetContasAsync()
+    {
+        try
+        {
+            await PrepararCabecalhoAuth();
+            return await _httpClient.GetFromJsonAsync<List<ContaDTO>>("Contas/dropdown") ?? new();
+        }
+        catch { return new(); }
+    }
+
+    // --- MÉTODO PARA FECHAR UMA CONTA FINANCEIRA (SOFT DELETE) ---
+    public async Task<(bool Sucesso, string Mensagem)> FecharContaAsync(int idConta)
+    {
+        try
+        {
+            await PrepararCabecalhoAuth();
+
+            // Como é um PUT sem corpo (body), enviamos null ou um conteúdo vazio
+            var response = await _httpClient.PutAsync($"Contas/{idConta}/fechar_conta", null);
+
+            if (response.IsSuccessStatusCode)
+                return (true, "Conta encerrada com sucesso.");
+
+            var erro = await response.Content.ReadAsStringAsync();
+            return (false, erro);
         }
         catch (Exception ex)
         {
@@ -86,337 +198,104 @@ public class ApiService
         }
     }
 
-    // --- MÉTODO PARA ENVIAR TICKET DE SUPORTE ---
+    public async Task<List<CategoriaDTO>> GetCategoriasAsync()
+    {
+        try { return await _httpClient.GetFromJsonAsync<List<CategoriaDTO>>("Categorias"); }
+        catch { return new(); }
+    }
+
+    public async Task<(bool Sucesso, string Mensagem)> CriarContaAsync(string nomeConta, decimal montanteInicial)
+    {
+        try
+        {
+            await PrepararCabecalhoAuth();
+            var response = await _httpClient.PostAsJsonAsync("Contas/nova_conta", new { NomeConta = nomeConta, Montante = montanteInicial });
+            return response.IsSuccessStatusCode ? (true, "Sucesso") : (false, "Erro ao criar conta.");
+        }
+        catch { return (false, "Erro de rede."); }
+    }
+
+    // --- TRANSAÇÕES E RELATÓRIOS ---
+
+    public async Task<bool> PostTransacaoAsync(TransacaoRequestDTO transacao)
+    {
+        try
+        {
+            await PrepararCabecalhoAuth();
+            var response = await _httpClient.PostAsJsonAsync("Transacoes", transacao);
+            return response.IsSuccessStatusCode;
+        }
+        catch { return false; }
+    }
+
+    public async Task<List<TransacaoReadDTO>> ObterExtratoAsync(int idConta, DateTime? dataInicio = null, DateTime? dataFim = null)
+    {
+        await PrepararCabecalhoAuth();
+        string url = $"Transacoes/extrato/{idConta}";
+        var queries = new List<string>();
+
+        if (dataInicio.HasValue) queries.Add($"dataInicio={dataInicio.Value:yyyy-MM-dd}");
+        if (dataFim.HasValue) queries.Add($"dataFim={dataFim.Value:yyyy-MM-dd}");
+
+        if (queries.Any()) url += "?" + string.Join("&", queries);
+
+        return await _httpClient.GetFromJsonAsync<List<TransacaoReadDTO>>(url) ?? new();
+    }
+
+    public async Task<List<RelatorioTransacaoDTO>> GetExtratoDetalhadoAsync(int mes, int ano, int? idConta, int? idCategoria, string busca)
+    {
+        await PrepararCabecalhoAuth();
+        var url = $"Relatorios/extrato-detalhado?mes={mes}&ano={ano}";
+        if (idConta > 0) url += $"&idConta={idConta}";
+        if (idCategoria > 0) url += $"&idCategoria={idCategoria}";
+        if (!string.IsNullOrEmpty(busca)) url += $"&busca={Uri.EscapeDataString(busca)}";
+
+        return await _httpClient.GetFromJsonAsync<List<RelatorioTransacaoDTO>>(url) ?? new();
+    }
+
+    // --- GRÁFICOS ---
+
+    public async Task<List<GastoCategoriaDTO>> GetGastosPorCategoriaAsync(int mes, int ano, int? idConta)
+    {
+        await PrepararCabecalhoAuth();
+        var url = $"Graficos/despesas-categoria?mes={mes}&ano={ano}";
+        if (idConta > 0) url += $"&idConta={idConta}";
+        return await _httpClient.GetFromJsonAsync<List<GastoCategoriaDTO>>(url) ?? new();
+    }
+
+    public async Task<List<FluxoCaixaDTO>> GetFluxoCaixaAsync(int ano, int? idConta)
+    {
+        await PrepararCabecalhoAuth();
+        var url = $"Graficos/fluxo-caixa?ano={ano}";
+        if (idConta > 0) url += $"&idConta={idConta}";
+        return await _httpClient.GetFromJsonAsync<List<FluxoCaixaDTO>>(url) ?? new();
+    }
+
+    // --- SUPORTE ---
+
     public async Task<(bool Sucesso, string Mensagem)> EnviarTicketAsync(string assunto, string mensagem)
     {
         try
         {
             var token = await SecureStorage.Default.GetAsync("auth_token");
-            if (string.IsNullOrEmpty(token))
-                return (false, "Sessão expirada. Faça login novamente.");
+            var userId = ExtrairIdDoToken(token);
 
-            // Tenta ler do storage, se não houver, extrai do token
-            var idClienteStr = await SecureStorage.Default.GetAsync("user_id");
-            if (string.IsNullOrEmpty(idClienteStr))
-            {
-                idClienteStr = ExtrairIdDoToken(token);
-            }
+            if (string.IsNullOrEmpty(userId)) return (false, "Utilizador não identificado.");
 
-            if (string.IsNullOrEmpty(idClienteStr))
-                return (false, "Não foi possível identificar o utilizador.");
-
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-            var dados = new { Assunto = assunto, Mensagem = mensagem };
-            var response = await _httpClient.PostAsJsonAsync($"User/{idClienteStr}/enviar-ticket", dados);
+            await PrepararCabecalhoAuth();
+            var response = await _httpClient.PostAsJsonAsync($"User/{userId}/enviar-ticket", new { Assunto = assunto, Mensagem = mensagem });
 
             if (response.IsSuccessStatusCode)
             {
-                var resultado = await response.Content.ReadFromJsonAsync<RespostasSuporte>();
-                return (true, resultado.mensagem);
+                var res = await response.Content.ReadFromJsonAsync<RespostasSuporte>();
+                return (true, res?.mensagem ?? "Ticket enviado!");
             }
-
-            var erroTexto = await response.Content.ReadAsStringAsync();
-            return (false, erroTexto);
-        }
-        catch (Exception ex)
-        {
-            return (false, $"Erro: {ex.Message}");
-        }
-    }
-
-    // --- MÉTODO PARA AS CONFIGURAÇÕES DE PERFIL PARA ATUALIZAÇÃO DE DADOS ---
-    public async Task<(bool Sucesso, string Mensagem)> AtualizarPerfilAsync(string nome, string email, string telemovel, DateTime dataNasc)
-    {
-        try
-        {
-            var token = await SecureStorage.Default.GetAsync("auth_token");
-            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-            var dados = new { Nome = nome, Email = email, Telemovel = telemovel, DataNasc = dataNasc };
-            var response = await _httpClient.PutAsJsonAsync("User/atualizar-perfil", dados);
-
-            if (response.IsSuccessStatusCode) return (true, "Perfil atualizado!");
-
-            var erro = await response.Content.ReadAsStringAsync();
-            return (false, erro);
+            return (false, "Falha ao enviar ticket.");
         }
         catch (Exception ex) { return (false, ex.Message); }
-    }
-
-    // --- MÉTODO PARA AS CONFIGURAÇÕES DE PERFIL PARA MUDANÇA DE PASSWORD ---
-    public async Task<(bool Sucesso, string Mensagem)> MudarPasswordAsync(string antiga, string nova)
-    {
-        try
-        {
-            var token = await SecureStorage.Default.GetAsync("auth_token");
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            var dados = new { PasswordAntiga = antiga, PasswordNova = nova };
-
-            // CORREÇÃO: Mudámos de PostAsJsonAsync para PutAsJsonAsync
-            var response = await _httpClient.PutAsJsonAsync("User/mudar-password", dados);
-
-            if (response.IsSuccessStatusCode)
-            {
-                return (true, "Password alterada com sucesso!");
-            }
-            else
-            {
-                string erroDaApi = await response.Content.ReadAsStringAsync();
-                return (false, $"A API recusou ({response.StatusCode}): {erroDaApi}");
-            }
-        }
-        catch (Exception ex)
-        {
-            return (false, $"Erro de ligação: {ex.Message}");
-        }
-    }
-
-    // --- MÉTODO PARA A RECUPERAÇÃO DA PASSWORD FORA DO PROGRAMA ---
-    public async Task<(bool Sucesso, string Mensagem)> RecuperarPasswordAsync(string email, string telemovel, string novaPassword)
-    {
-        try
-        {
-            var dados = new { Email = email, Telemovel = telemovel, NovaPassword = novaPassword };
-
-            // Aqui não passamos Token, porque o utilizador não está logado
-            var response = await _httpClient.PostAsJsonAsync("User/recuperar-password", dados);
-
-            if (response.IsSuccessStatusCode)
-            {
-                return (true, "Password recuperada com sucesso!");
-            }
-
-            var erro = await response.Content.ReadAsStringAsync();
-            return (false, erro);
-        }
-        catch (Exception ex)
-        {
-            return (false, $"Erro: {ex.Message}");
-        }
-    }
-
-    // --- MÉTODO PARA CARREGAR OS DADOS DO DASHBOARD ---
-    public async Task<DashboardResumo> GetResumoDashboardAsync()
-    {
-        try
-        {
-            // 1. Fazemos a chamada manualmente para verificar o Status Code
-            var response = await _httpClient.GetAsync("Dashboard/resumo");
-
-            // 2. Se a API responder com sucesso (200 OK)
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadFromJsonAsync<DashboardResumo>();
-            }
-
-            // 3. Se chegar aqui, a API deu erro (ex: 401 Unauthorized ou 404)
-            var conteudoErro = await response.Content.ReadAsStringAsync();
-            Debug.WriteLine($" Erro da API: {response.StatusCode} - {conteudoErro}");
-            return null;
-        }
-        catch (Exception ex)
-        {
-            // 4. Erro de rede ou JSON mal formado
-            Debug.WriteLine($" Exceção no GetResumo: {ex.Message}");
-            return null;
-        }
-    }
-
-    // --- MÉTODO DE LISTAR AS CONTAS ---
-    public async Task<List<ContaDTO>> GetContasAsync()
-    {
-        try
-        {
-            var token = await SecureStorage.Default.GetAsync("auth_token");
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            var response = await _httpClient.GetAsync("Contas/dropdown");
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadFromJsonAsync<List<ContaDTO>>() ?? new List<ContaDTO>();
-            }
-            return new List<ContaDTO>();
-        }
-        catch { return new List<ContaDTO>(); }
-    }
-
-    // --- MÉTODO PARA LISTAR AS CATEGORIAS ---
-    public async Task<List<CategoriaDTO>> GetCategoriasAsync()
-    {
-        // Garante que o endereço corresponde ao teu Controller de Categorias no Backend
-        return await _httpClient.GetFromJsonAsync<List<CategoriaDTO>>("/api/Categorias");
-    }
-
-    // --- MÉTODO PARA PUXAR OS DADOS DO CLIENTE PARA AS CONFIGURAÇÕES DE PERFIL ---
-    public async Task<UserUpdateDTO> ObterPerfilAsync()
-    {
-        try
-        {
-            var token = await SecureStorage.Default.GetAsync("auth_token");
-            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-            var response = await _httpClient.GetAsync("User/perfil");
-
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadFromJsonAsync<UserUpdateDTO>();
-            }
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Erro ao buscar perfil: {ex.Message}");
-            return null;
-        }
-    }
-    
-    // --- MÉTODO PARA A GERAR O HISTÓRICO DE TRANSAÇÕES ---
-    public async Task<List<TransacaoReadDTO>> ObterExtratoAsync(int idConta, DateTime? dataInicio = null, DateTime? dataFim = null)
-    {
-        var token = await SecureStorage.Default.GetAsync("auth_token");
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-        string url = $"Transacoes/extrato/{idConta}"; 
-        var parametros = new List<string>();
-
-        if (dataInicio.HasValue)
-            parametros.Add($"dataInicio={dataInicio.Value:yyyy-MM-dd}");
-
-        if (dataFim.HasValue)
-            parametros.Add($"dataFim={dataFim.Value:yyyy-MM-dd}");
-
-        if (parametros.Any())
-            url += "?" + string.Join("&", parametros);
-
-        var response = await _httpClient.GetAsync(url);
-
-        if (response.IsSuccessStatusCode)
-        {
-            var extrato = await response.Content.ReadFromJsonAsync<List<TransacaoReadDTO>>();
-            return extrato ?? new List<TransacaoReadDTO>();
-        }
-        else
-        {
-            // AQUI ESTÁ A MAGIA: Lemos o erro da API e "atiramos" para a página ler!
-            string erroDaApi = await response.Content.ReadAsStringAsync();
-            throw new Exception($"API devolveu {response.StatusCode}: {erroDaApi}");
-        }
-    }
-
-    // --- MÉTODOS PARA A GERAÇÃO DE GRÁFICOS ---
-
-    public async Task<List<GastoCategoriaDTO>> GetGastosPorCategoriaAsync(int mes, int ano, int? idConta)
-    {
-        var url = $"/api/Graficos/despesas-categoria?mes={mes}&ano={ano}";
-        if (idConta.HasValue && idConta > 0) url += $"&idConta={idConta}";
-
-        return await _httpClient.GetFromJsonAsync<List<GastoCategoriaDTO>>(url);
-    }
-
-    public async Task<List<FluxoCaixaDTO>> GetFluxoCaixaAsync(int ano, int? idConta)
-    {
-        var url = $"/api/Graficos/fluxo-caixa?ano={ano}";
-        if (idConta.HasValue && idConta > 0) url += $"&idConta={idConta}";
-
-        return await _httpClient.GetFromJsonAsync<List<FluxoCaixaDTO>>(url);
-    }
-
-    // --- MÉTODO PARA A GERAÇÃO DE RELATÓRIOS --- 
-    public async Task<List<RelatorioTransacaoDTO>> GetExtratoDetalhadoAsync(int mes, int ano, int? idConta, int? idCategoria, string busca)
-    {
-        var url = $"/api/Relatorios/extrato-detalhado?mes={mes}&ano={ano}";
-
-        if (idConta.HasValue && idConta > 0) url += $"&idConta={idConta}";
-        if (idCategoria.HasValue && idCategoria > 0) url += $"&idCategoria={idCategoria}";
-        if (!string.IsNullOrEmpty(busca)) url += $"&busca={Uri.EscapeDataString(busca)}";
-
-        return await _httpClient.GetFromJsonAsync<List<RelatorioTransacaoDTO>>(url);
-    }
-
-    // --- MÉTODO PARA CRIAR UMA CONTA FINANCEIRA ---
-    public async Task<(bool Sucesso, string Mensagem)> CriarContaAsync(string nomeConta, decimal montanteInicial)
-    {
-        try
-        {
-            var token = await SecureStorage.Default.GetAsync("auth_token");
-            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-            var dados = new ContaUserCreateDTO { NomeConta = nomeConta, Montante = montanteInicial };
-            var response = await _httpClient.PostAsJsonAsync("Contas/nova_conta", dados);
-
-            if (response.IsSuccessStatusCode) return (true, "Conta criada com sucesso!");
-
-            return (false, await response.Content.ReadAsStringAsync());
-        }
-        catch (Exception ex) { return (false, ex.Message); }
-    }
-
-    // MÉTODO PARA FECHAR UMA CONTA FINANCEIRA (SOFT DELETE) ---
-    public async Task<(bool Sucesso, string Mensagem)> FecharContaAsync(int idConta)
-    {
-        try
-        {
-            var token = await SecureStorage.Default.GetAsync("auth_token");
-            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-            // Como é um PUT sem corpo (body), enviamos null
-            var response = await _httpClient.PutAsync($"Contas/{idConta}/fechar_conta", null);
-
-            if (response.IsSuccessStatusCode) return (true, "Conta encerrada.");
-
-            return (false, await response.Content.ReadAsStringAsync());
-        }
-        catch (Exception ex) { return (false, ex.Message); }
-    }
-
-    // MÉTODO PARA REGISTRO DE UMA TRANSAÇÃO NUMA CONTA FINANCEIRA (QUER SEJA RECEITA, DESPESA OU TRANSFERÊNCIA ENTRE CONTAS) ---
-    public async Task<bool> PostTransacaoAsync(TransacaoRequestDTO transacao)
-    {
-        try
-        {
-            // 1. Ir buscar o token que guardámos no Login
-            var token = await SecureStorage.Default.GetAsync("auth_token");
-
-            if (string.IsNullOrEmpty(token)) return false;
-
-            // 2. Configurar o cabeçalho de autorização
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token);
-
-            // 3. Serializar o objeto para JSON
-            string json = JsonSerializer.Serialize(transacao);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-
-            // 4. Fazer o pedido POST sem a barra inicial "/"
-            // Assim ele junta corretamente: .../api/ + Transacoes
-            var response = await _httpClient.PostAsync("Transacoes", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                return true;
-            }
-            else
-            {
-                // BÓNUS: Se a API der erro, lemos a mensagem de erro da API para o Output (Debug)
-                var erroApi = await response.Content.ReadAsStringAsync();
-                Debug.WriteLine($"[Erro API - {response.StatusCode}]: {erroApi}");
-                return false;
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Erro crítico ao registar transação: {ex.Message}");
-            return false;
-        }
     }
 }
 
-// Classes auxiliares para o JSON
-public class TokenResponse { public required string Token { get; set; } }
-
-// Classe auxiliar para o Deserialize (pode por no fim do arquivo ou num folder de Models)
+// Modelos de Resposta Rápidos
+public class TokenResponse { public string Token { get; set; } }
 public class RespostasSuporte { public string mensagem { get; set; } }

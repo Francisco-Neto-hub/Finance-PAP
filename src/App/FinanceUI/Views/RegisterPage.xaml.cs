@@ -1,97 +1,102 @@
 using FinanceUI.Models;
+using FinanceUI.Services;
+using System.Net.Http;
+using System.Text.RegularExpressions;
 
 namespace FinanceUI.Views;
 
 public partial class RegisterPage : ContentPage
 {
     private readonly ApiService _apiService;
-    
-    // Injeção de dependência no construtor
+
     public RegisterPage(ApiService apiService)
     {
         InitializeComponent();
         _apiService = apiService;
 
-        // Sugestão: Definir uma data máxima para o picker (ex: 18 anos atrás)
-        DataNascPicker.MaximumDate = DateTime.Now.AddYears(-18);
+        // Regra de negócio: Utilizador deve ter pelo menos 16 ou 18 anos
+        DataNascPicker.MaximumDate = DateTime.Now.AddYears(-16);
+        DataNascPicker.Date = DateTime.Now.AddYears(-25); // Sugestão inicial
     }
 
+    #region Visibilidade de Password
     private void AoClicarMostrarOcultarPass(object sender, EventArgs e)
     {
-        // Inverte o estado atual
+        if (PassEntry == null) return;
         PassEntry.IsPassword = !PassEntry.IsPassword;
-
-        // Altera o ícone
         BtnTogglePass.Source = PassEntry.IsPassword ? "olho_visivel.png" : "olho_oculto.png";
     }
 
     private void AoClicarMostrarOcultarConfirmPass(object sender, EventArgs e)
     {
-        // Inverte o estado atual
+        if (ConfirmPassEntry == null) return;
         ConfirmPassEntry.IsPassword = !ConfirmPassEntry.IsPassword;
-
-        // Altera o ícone
         BtnToggleConfirmPass.Source = ConfirmPassEntry.IsPassword ? "olho_visivel.png" : "olho_oculto.png";
     }
+    #endregion
 
     private async void AoClicarRegistar(object sender, EventArgs e)
     {
-        // 1. Validações básicas de UI
-        if (string.IsNullOrWhiteSpace(NomeEntry.Text) ||
-            string.IsNullOrWhiteSpace(EmailEntry.Text) ||
-            string.IsNullOrWhiteSpace(TelemovelEntry.Text) ||
-            string.IsNullOrWhiteSpace(PassEntry.Text))
+        // 1. Captura e Limpeza de Dados
+        var nome = NomeEntry?.Text?.Trim() ?? string.Empty;
+        var email = EmailEntry?.Text?.Trim() ?? string.Empty;
+        var telemovel = TelemovelEntry?.Text?.Trim() ?? string.Empty;
+        var pass = PassEntry?.Text ?? string.Empty;
+        var confirmPass = ConfirmPassEntry?.Text ?? string.Empty;
+
+        // 2. Validações de UI
+        if (string.IsNullOrWhiteSpace(nome) || string.IsNullOrWhiteSpace(email) ||
+            string.IsNullOrWhiteSpace(telemovel) || string.IsNullOrWhiteSpace(pass))
         {
-            await DisplayAlertAsync("Erro", "Por favor, preencha todos os campos.", "OK");
+            await DisplayAlertAsync("Erro", "Todos os campos são obrigatórios.", "OK");
             return;
         }
 
-        if (PassEntry.Text != ConfirmPassEntry.Text)
+        if (!IsValidEmail(email))
+        {
+            await DisplayAlertAsync("Email Inválido", "Por favor, insira um email válido.", "OK");
+            return;
+        }
+
+        if (pass != confirmPass)
         {
             await DisplayAlertAsync("Erro", "As palavras-passe não coincidem!", "OK");
             return;
         }
 
-        if (PassEntry.Text.Length < 6)
-        {
-            await DisplayAlertAsync("Erro", "A palavra-passe deve ter pelo menos 6 caracteres.", "OK");
-            return;
-        }
-
-        // 2. Iniciar animação
         Indicador.IsRunning = true;
         BtnRegistar.IsEnabled = false;
 
         try
         {
-            // Criar o objeto com os dados dos campos
             var novoRegisto = new RegistoRequestDTO
             {
-                Nome = NomeEntry.Text,
-                Email = EmailEntry.Text,
-                Telemovel = TelemovelEntry.Text,
-                DataNasc = (DateTime)DataNascPicker.Date,
-                Password = PassEntry.Text
+                Nome = nome,
+                Email = email,
+                Telemovel = telemovel,
+                DataNasc = DataNascPicker.Date,
+                Password = pass
             };
 
             // 3. Chamada à API
+            // 'resultado' é uma Tupla (ValueTuple), por isso não pode ser null
             var resultado = await _apiService.RegistarAsync(novoRegisto);
 
+            // CORREÇÃO TUPLA: Acedemos diretamente às propriedades da tupla
             if (resultado.Sucesso)
             {
-                await DisplayAlertAsync("Sucesso", "Conta criada com sucesso! Já pode fazer login.", "OK");
-
-                // Navega de volta para a página anterior (Login)
+                await DisplayAlertAsync("Sucesso ✨", "Conta criada! Agora já pode entrar.", "OK");
                 await Navigation.PopAsync();
             }
             else
             {
-                await DisplayAlertAsync("Erro no Registo", resultado.Mensagem, "OK");
+                // CORREÇÃO: Não usamos '?' porque tuplas não são nulas
+                await DisplayAlertAsync("Erro no Registo", resultado.Mensagem, "Tentar novamente");
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            await DisplayAlertAsync("Erro Crítico", ex.Message, "OK");
+            await DisplayAlertAsync("Erro Crítico", "Não foi possível ligar ao servidor.", "OK");
         }
         finally
         {
@@ -102,7 +107,16 @@ public partial class RegisterPage : ContentPage
 
     private async void AoClicarIrParaLogin(object sender, EventArgs e)
     {
-        // Navega de volta para a página de Login
         await Navigation.PopAsync();
+    }
+
+    // Validação de Email Robusta
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase);
+        }
+        catch { return false; }
     }
 }

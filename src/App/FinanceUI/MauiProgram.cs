@@ -1,4 +1,5 @@
-﻿using FinanceUI.Views;
+﻿using FinanceUI.Services;
+using FinanceUI.Views;
 using Microsoft.Extensions.Logging;
 using SkiaSharp.Views.Maui.Controls.Hosting; // ADICIONAR ISTO
 
