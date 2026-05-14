@@ -1,10 +1,15 @@
+using FinanceUI.Models;
+using FinanceUI.Services;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
+
 namespace FinanceUI.Views;
 
 public partial class ProfilePage : ContentPage
 {
     private readonly ApiService _apiService;
-    
-    // Lembra-te de injetar o ApiService no construtor (e registar no MauiProgram)
+    private bool _isBusy;
+
     public ProfilePage(ApiService apiService)
     {
         InitializeComponent();
@@ -19,106 +24,165 @@ public partial class ProfilePage : ContentPage
 
     private async Task CarregarDadosDoUtilizador()
     {
-        Indicador.IsRunning = true;
+        if (_isBusy) return;
 
-        var dados = await _apiService.ObterPerfilAsync();
-
-        if (dados != null)
+        try
         {
-            NomeEntry.Text = dados.Nome;
-            EmailEntry.Text = dados.Email;
-            TelemovelEntry.Text = dados.Telemovel;
-            DataNascPicker.Date = dados.DataNasc;
-        }
-        else
-        {
-            await DisplayAlertAsync("Erro", "Não foi possível carregar os teus dados.", "OK");
-        }
+            _isBusy = true;
+            Indicador.IsRunning = true;
 
-        Indicador.IsRunning = false;
+            var dados = await _apiService.ObterPerfilAsync();
+
+            if (dados != null)
+            {
+                NomeEntry.Text = dados.Nome;
+                EmailEntry.Text = dados.Email;
+                TelemovelEntry.Text = dados.Telemovel;
+                DataNascPicker.Date = dados.DataNasc;
+            }
+            else
+            {
+                await DisplayAlertAsync("Erro", "Não foi possível carregar os teus dados de perfil.", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[Profile Error]: {ex.Message}");
+        }
+        finally
+        {
+            _isBusy = false;
+            Indicador.IsRunning = false;
+        }
     }
+
+    #region Visibilidade de Passwords
     private void AoClicarMostrarOcultarAntigaPassword(object sender, EventArgs e)
     {
-        // Inverte o estado atual
+        if (AntigaPassEntry == null) return;
         AntigaPassEntry.IsPassword = !AntigaPassEntry.IsPassword;
-
-        // Altera o ícone
         BtnToggleAntigaPass.Source = AntigaPassEntry.IsPassword ? "olho_visivel.png" : "olho_oculto.png";
     }
 
     private void AoClicarMostrarOcultarNovaPassword(object sender, EventArgs e)
     {
-        // Inverte o estado atual
+        if (NovaPassEntry == null) return;
         NovaPassEntry.IsPassword = !NovaPassEntry.IsPassword;
-
-        // Altera o ícone
         BtnToggleNovaPass.Source = NovaPassEntry.IsPassword ? "olho_visivel.png" : "olho_oculto.png";
     }
+    #endregion
+
     private async void AoClicarLogout(object sender, EventArgs e)
     {
-        SecureStorage.Default.Remove("auth_token");
-        var loginPage = Handler.MauiContext.Services.GetService<LoginPage>();
-        Application.Current.MainPage = new NavigationPage(loginPage);
+        bool confirmar = await DisplayAlertAsync("Sair", "Tem a certeza que deseja encerrar a sessão?", "Sim", "Não");
+
+        if (confirmar)
+        {
+            try
+            {
+                SecureStorage.Default.Remove("auth_token");
+
+                // Redireciona para o Login limpando a stack de navegação
+                var loginPage = Handler.MauiContext.Services.GetService<LoginPage>();
+                Application.Current.MainPage = new NavigationPage(loginPage);
+            }
+            catch (Exception)
+            {
+                // Fallback de segurança
+                Application.Current.MainPage = new NavigationPage(new LoginPage(_apiService));
+            }
+        }
     }
 
-    // ----------------------------------------------------
-    // MÉTODO: ATUALIZAR DADOS PESSOAIS
-    // ----------------------------------------------------
+    // --- ATUALIZAR DADOS PESSOAIS ---
     private async void AoClicarGuardarPerfil(object sender, EventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(NomeEntry.Text) || 
-            string.IsNullOrWhiteSpace(EmailEntry.Text) || 
-            string.IsNullOrWhiteSpace(TelemovelEntry.Text))
+        var nome = NomeEntry.Text?.Trim();
+        var email = EmailEntry.Text?.Trim();
+        var telemovel = TelemovelEntry.Text?.Trim();
+
+        if (string.IsNullOrWhiteSpace(nome) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(telemovel))
         {
             await DisplayAlertAsync("Aviso", "Por favor, preencha todos os campos pessoais.", "OK");
             return;
         }
 
-        Indicador.IsRunning = true;
-
-        var resultado = await _apiService.AtualizarPerfilAsync(
-            NomeEntry.Text, 
-            EmailEntry.Text, 
-            TelemovelEntry.Text,
-            (DateTime)DataNascPicker.Date);
-
-        Indicador.IsRunning = false;
-
-        if (resultado.Sucesso)
+        if (!IsValidEmail(email))
         {
-            await DisplayAlertAsync("Sucesso", resultado.Mensagem, "OK");
-        }
-        else
-        {
-            await DisplayAlertAsync("Erro ao Guardar", resultado.Mensagem, "OK");
-        }
-    }
-
-    // ----------------------------------------------------
-    // MÉTODO: MUDAR PASSWORD
-    // ----------------------------------------------------
-    private async void AoClicarMudarPass(object sender, EventArgs e)
-    {
-        if (string.IsNullOrWhiteSpace(AntigaPassEntry.Text) || string.IsNullOrWhiteSpace(NovaPassEntry.Text))
-        {
-            await DisplayAlertAsync("Aviso", "Preencha ambas as passwords.", "OK");
+            await DisplayAlertAsync("Email Inválido", "Insira um endereço de email válido.", "OK");
             return;
         }
 
-        Indicador.IsRunning = true;
-        
-        var resultado = await _apiService.MudarPasswordAsync(AntigaPassEntry.Text, NovaPassEntry.Text);
-        
-        Indicador.IsRunning = false;
+        try
+        {
+            Indicador.IsRunning = true;
+            var resultado = await _apiService.AtualizarPerfilAsync(nome, email, telemovel, (DateTime)DataNascPicker.Date);
 
-        if (resultado.Sucesso)
-        {
-            await DisplayAlertAsync("Sucesso", resultado.Mensagem, "OK");
-            AntigaPassEntry.Text = NovaPassEntry.Text = string.Empty;
+            if (resultado.Sucesso)
+            {
+                await DisplayAlertAsync("Sucesso ✨", "Perfil atualizado com sucesso!", "OK");
+            }
+            else
+            {
+                await DisplayAlertAsync("Erro", resultado.Mensagem, "OK");
+            }
         }
-        else
+        catch (Exception)
         {
-            await DisplayAlertAsync("Erro detalhado", resultado.Mensagem, "OK");
+            await DisplayAlertAsync("Erro Crítico", "Falha ao comunicar com o servidor.", "OK");
         }
-    }    
+        finally
+        {
+            Indicador.IsRunning = false;
+        }
+    }
+
+    // --- MUDAR PASSWORD ---
+    private async void AoClicarMudarPass(object sender, EventArgs e)
+    {
+        var antiga = AntigaPassEntry.Text;
+        var nova = NovaPassEntry.Text;
+
+        if (string.IsNullOrWhiteSpace(antiga) || string.IsNullOrWhiteSpace(nova))
+        {
+            await DisplayAlertAsync("Aviso", "Preencha as duas passwords para proceder à alteração.", "OK");
+            return;
+        }
+
+        if (nova.Length < 6)
+        {
+            await DisplayAlertAsync("Segurança", "A nova password deve ter pelo menos 6 caracteres.", "OK");
+            return;
+        }
+
+        try
+        {
+            Indicador.IsRunning = true;
+            var resultado = await _apiService.MudarPasswordAsync(antiga, nova);
+
+            if (resultado.Sucesso)
+            {
+                await DisplayAlertAsync("Sucesso", "Password alterada com sucesso!", "OK");
+                AntigaPassEntry.Text = string.Empty;
+                NovaPassEntry.Text = string.Empty;
+            }
+            else
+            {
+                await DisplayAlertAsync("Erro", resultado.Mensagem, "OK");
+            }
+        }
+        catch (Exception)
+        {
+            await DisplayAlertAsync("Erro", "Não foi possível mudar a password.", "OK");
+        }
+        finally
+        {
+            Indicador.IsRunning = false;
+        }
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase);
+    }
 }

@@ -1,10 +1,15 @@
 using FinanceUI.Models;
+using FinanceUI.Services;
+using System.Diagnostics;
+using System.Globalization;
 
 namespace FinanceUI.Views;
 
 public partial class ContasPage : ContentPage
 {
     private readonly ApiService _apiService;
+    private bool _isBusy;
+
     public ContasPage(ApiService apiService)
     {
         InitializeComponent();
@@ -19,21 +24,41 @@ public partial class ContasPage : ContentPage
 
     private async Task CarregarContas()
     {
-        RefreshContas.IsRefreshing = true;
-        List<ContaDTO> contas = await _apiService.GetContasAsync();
-        ListaContas.ItemsSource = contas;
-        RefreshContas.IsRefreshing = false;
+        if (_isBusy) return;
+
+        try
+        {
+            _isBusy = true;
+            RefreshContas.IsRefreshing = true;
+
+            var contas = await _apiService.GetContasAsync();
+
+            // Atribui a lista (se for null, fica vazia para evitar erro na UI)
+            ListaContas.ItemsSource = contas ?? new List<ContaDTO>();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[Contas Error]: {ex.Message}");
+            await DisplayAlertAsync("Erro", "Não foi possível carregar as contas.", "OK");
+        }
+        finally
+        {
+            RefreshContas.IsRefreshing = false;
+            _isBusy = false;
+        }
     }
 
-    private void AoAtualizarLista(object sender, EventArgs e)
+    private async void AoAtualizarLista(object sender, EventArgs e)
     {
-        _ = CarregarContas();
+        await CarregarContas();
     }
 
     // --- LÓGICA DE CRIAR CONTA ---
+
     private void AoClicarMostrarFormulario(object sender, EventArgs e)
     {
         FormNovaConta.IsVisible = true;
+        NomeContaEntry.Focus(); // Dá foco automático ao teclado
     }
 
     private void AoClicarCancelar(object sender, EventArgs e)
@@ -45,58 +70,83 @@ public partial class ContasPage : ContentPage
 
     private async void AoClicarGuardarConta(object sender, EventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(NomeContaEntry.Text))
+        // 1. Validação de Nome
+        var nomeConta = NomeContaEntry.Text?.Trim();
+        if (string.IsNullOrWhiteSpace(nomeConta))
         {
-            await DisplayAlertAsync("Erro", "Dê um nome à conta.", "OK");
+            await DisplayAlertAsync("Aviso", "Por favor, dê um nome à conta (ex: Carteira, Banco).", "OK");
             return;
         }
 
-        // Converte o saldo introduzido (trata vírgulas e pontos)
-        decimal saldoInicial = 0;
-        if (!string.IsNullOrWhiteSpace(SaldoInicialEntry.Text))
+        // 2. Validação de Saldo (Otimizado para ser universal)
+        string saldoTexto = SaldoInicialEntry.Text?.Replace(',', '.') ?? "0";
+        if (!decimal.TryParse(saldoTexto, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal saldoInicial))
         {
-            if (!decimal.TryParse(SaldoInicialEntry.Text.Replace('.', ','), out saldoInicial))
+            await DisplayAlertAsync("Erro", "O saldo inicial inserido é inválido.", "OK");
+            return;
+        }
+
+        try
+        {
+            _isBusy = true;
+            // Opcional: Desativar botão de guardar enquanto processa
+
+            var resultado = await _apiService.CriarContaAsync(nomeConta, saldoInicial);
+
+            if (resultado.Sucesso)
             {
-                await DisplayAlertAsync("Erro", "O saldo inserido é inválido.", "OK");
-                return;
+                await DisplayAlertAsync("Sucesso ✨", resultado.Mensagem, "OK");
+                AoClicarCancelar(null, null); // Limpa e esconde o form
+                await CarregarContas();       // Atualiza a lista
+            }
+            else
+            {
+                await DisplayAlertAsync("Erro", resultado.Mensagem, "OK");
             }
         }
-
-        var resultado = await _apiService.CriarContaAsync(NomeContaEntry.Text, saldoInicial);
-
-        if (resultado.Sucesso)
+        catch (Exception)
         {
-            await DisplayAlertAsync("Sucesso", resultado.Mensagem, "OK");
-            AoClicarCancelar(null, null); // Esconde e limpa o formulário
-            await CarregarContas();       // Atualiza a lista
+            await DisplayAlertAsync("Erro Crítico", "Falha ao comunicar com o servidor.", "OK");
         }
-        else
+        finally
         {
-            await DisplayAlertAsync("Erro", resultado.Mensagem, "OK");
+            _isBusy = false;
         }
     }
 
     // --- LÓGICA DE FECHAR CONTA (SWIPE) ---
+
     private async void AoFazerSwipeFechar(object sender, EventArgs e)
     {
-        var item = (SwipeItem)sender;
-        var contaSelecionada = (ContaDTO)item.CommandParameter;
+        // 1. Obter o item selecionado via CommandParameter
+        if (sender is not SwipeItem swipeItem || swipeItem.CommandParameter is not ContaDTO contaSelecionada)
+            return;
 
-        if (contaSelecionada == null) return;
+        // 2. Confirmação de segurança
+        bool confirmar = await DisplayAlertAsync("Fechar Conta",
+            $"Deseja mesmo fechar a conta '{contaSelecionada.NomeConta}'?\n\nEsta ação não pode ser revertida.",
+            "Confirmar", "Cancelar");
 
-        bool confirmar = await DisplayAlertAsync("Confirmação", $"Tem a certeza que deseja fechar a conta '{contaSelecionada.NomeConta}'?", "Sim", "Não");
         if (!confirmar) return;
 
-        var resultado = await _apiService.FecharContaAsync(contaSelecionada.Id);
+        try
+        {
+            var resultado = await _apiService.FecharContaAsync(contaSelecionada.Id);
 
-        if (resultado.Sucesso)
-        {
-            await DisplayAlertAsync("Fechada", resultado.Mensagem, "OK");
-            await CarregarContas(); // Remove da lista visualmente
+            if (resultado.Sucesso)
+            {
+                await DisplayAlertAsync("Sucesso", "Conta encerrada com sucesso.", "OK");
+                await CarregarContas();
+            }
+            else
+            {
+                await DisplayAlertAsync("Não foi possível fechar", resultado.Mensagem, "OK");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            await DisplayAlertAsync("Erro", resultado.Mensagem, "OK");
+            Debug.WriteLine($"[Swipe Error]: {ex.Message}");
+            await DisplayAlertAsync("Erro", "Ocorreu um erro ao tentar fechar a conta.", "OK");
         }
     }
 }
